@@ -1,0 +1,15 @@
+{
+  "_comment_general": "Plantilla de configuracion MCP para Cursor. Descomenta y rellena el bloque que necesites. La regla critica: en produccion, los MCPs de BD deben ir en modo read-only.",
+
+  "mcpServers": {
+    "_comment_postgres": "Plantilla para Postgres local de desarrollo. Sustituye USER:PASS@HOST:PORT/DB por tu connection string real. Renombra postgres-template a algo descriptivo del proyecto (ej: postgres-myapp).",
+    "postgres-template": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://USER:PASS@localhost:5432/DBNAME"
+      ]
+    }
+  }
+}
