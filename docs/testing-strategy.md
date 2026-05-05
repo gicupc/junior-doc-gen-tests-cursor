@@ -58,6 +58,39 @@ tests/
 ### Patrón de mock para BD
 *[Pegar aquí el snippet de cómo se monta el mock de la BD en este proyecto. Ejemplo para Prisma + Jest, PDO en PHPUnit, etc. — para que todos los tests sigan el mismo estilo.]*
 
+#### Patrones de referencia por stack
+
+**Prisma + Jest (Node/TypeScript)** — usar `jest.fn(() => obj)` (NO `mockImplementation`):
+
+```ts
+jest.mock('@prisma/client', () => {
+    const mPrisma = {
+        user: { findMany: jest.fn(), findUnique: jest.fn(), update: jest.fn() },
+    };
+    return { PrismaClient: jest.fn(() => mPrisma) };
+});
+
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient() as jest.Mocked<any>;
+
+beforeEach(() => jest.clearAllMocks());
+(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 1, name: 'Ana' });
+```
+
+**Razón crítica:** si el código de producción usa Active Record (cada modelo de dominio hace `const prisma = new PrismaClient()` dentro del archivo), `mockImplementation` crea una instancia nueva por cada llamada, y los mocks configurados en el test NO alcanzan a la instancia interna del modelo. Con `jest.fn(() => mPrisma)` todas las invocaciones devuelven el mismo objeto.
+
+**PDO + PHPUnit (PHP)**:
+
+```php
+$pdo = $this->createMock(PDO::class);
+$stmt = $this->createMock(PDOStatement::class);
+$pdo->method('prepare')->willReturn($stmt);
+$stmt->method('execute')->willReturn(true);
+$stmt->method('fetch')->willReturn(['id' => 1, 'name' => 'Ana']);
+```
+
+Recordar instalar `phpstan/phpstan-phpunit` para evitar falsos positivos del linter en `->method()` y `->expects()`.
+
 ---
 
 ## Cobertura actual

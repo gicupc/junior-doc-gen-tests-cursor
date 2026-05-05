@@ -25,7 +25,7 @@ asi que las reglas globales del sistema estan presentes en cada chat sin que
 tengas que invocarlas.
 
 --------------------------------------------------------------------------------
- SLASH COMMANDS DISPONIBLES (10 skills con disable-model-invocation)
+ SLASH COMMANDS DISPONIBLES (11 skills con disable-model-invocation)
 --------------------------------------------------------------------------------
 Las skills viven en .cursor/skills/<nombre>/SKILL.md. Las que tienen
 disable-model-invocation: true se comportan como slash commands clasicos
@@ -37,6 +37,9 @@ se cargan automaticamente cuando la IA detecta que aplican.
 +------------------+------------------------------------------------------------+
 | /inicio          | Proyecto vacio. Entrevista BMADT + docs + setup de tests   |
 |                  | + setup de BD si aplica.                                   |
+| /onboarding      | Codebase ajeno (ejercicio bootcamp, PR de companero, debug |
+|                  | urgente). Mapa rapido en 6 secciones, sin generar docs.    |
+|                  | NUEVO en v4.3.                                             |
 | /regularizar     | Proyecto con codigo pero sin docs. Menu [1][2][3][4]. La   |
 |                  | opcion [4] incluye auditoria de BD si hay.                 |
 | /hoy             | "Que hacemos hoy." Briefing con sugerencia para el dia.    |
@@ -59,6 +62,8 @@ Skills auxiliares (auto-invocables, sin slash):
 - tests-skill           — convenciones para generar tests por stack.
 - legacy-testing-skill  — characterization tests para legacy.
 - database-skill        — diseno y auditoria de BD.
+- prompt-skill          — manual del usuario para redactar prompts profesionales
+                          siguiendo el patron RACEO. NUEVO en v4.3.
 
 Puedes pasar contexto despues del comando. Ejemplo:
   /nueva quiero anadir exportacion a PDF en el modulo de prompts
@@ -137,6 +142,17 @@ nunca conectar el MCP en modo escritura contra una BD con datos reales.
    En proyectos con BD, ejecutar /revisar-bd antes de hacer cambios
    destructivos. La IA detecta, el humano decide, el humano repara.
 
+10. IMPLEMENTACION PASO A PASO (NUEVO en v4.3)
+    Si un plan implica tocar mas de 2 archivos, aplicar
+    On(implementation_phase) con paradas obligatorias entre archivos.
+    Una modificacion = un paso. Tras cada paso, esperar "ok, sigue".
+    La disciplina es lo que permite al usuario revisar a tiempo.
+
+11. PROMPTS PROFESIONALES (NUEVO en v4.3)
+    Para tareas complejas (onboarding, planificacion, implementacion,
+    auditorias), el usuario consulta prompt-skill y aplica el patron
+    RACEO: Role + Objective + Context + Constraints + Expected Output.
+
 --------------------------------------------------------------------------------
  ESTRUCTURA DE ARCHIVOS
 --------------------------------------------------------------------------------
@@ -149,8 +165,9 @@ nunca conectar el MCP en modo escritura contra una BD con datos reales.
 │   ├── mcp.json                    # Plantilla de configuracion MCP
 │   ├── rules/
 │   │   └── architect-brain.mdc     # Rule global con alwaysApply: true
-│   └── skills/                     # 13 skills (10 commands + 3 aux)
+│   └── skills/                     # 14 skills (11 commands + 3 aux + 1 manual)
 │       ├── inicio/SKILL.md
+│       ├── onboarding/SKILL.md         # nuevo en v4.3
 │       ├── regularizar/SKILL.md
 │       ├── hoy/SKILL.md
 │       ├── nueva/SKILL.md
@@ -162,7 +179,8 @@ nunca conectar el MCP en modo escritura contra una BD con datos reales.
 │       ├── revisar-bd/SKILL.md
 │       ├── tests-skill/SKILL.md           # auto-invocable
 │       ├── legacy-testing-skill/SKILL.md  # auto-invocable
-│       └── database-skill/SKILL.md        # auto-invocable
+│       ├── database-skill/SKILL.md        # auto-invocable
+│       └── prompt-skill/SKILL.md          # auto-invocable, manual usuario
 ├── docs/                           # SSOT - Single Source of Truth
 │   ├── prd.md                      # Plantilla
 │   ├── architecture.md

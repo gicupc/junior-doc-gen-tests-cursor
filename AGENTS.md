@@ -13,6 +13,7 @@ Antes de hacer cualquier cambio, consulta:
 
 Escribe `/` en chat para ver los slash commands:
 - `/inicio` — proyecto nuevo (entrevista BMADT + setup completo).
+- `/onboarding` — codebase ajeno: mapa rapido en 6 secciones sin generar docs.
 - `/regularizar` — proyecto existente sin docs.
 - `/hoy` — briefing al retomar.
 - `/nueva` — anadir funcionalidad con interrupcion de seguridad.
@@ -23,6 +24,12 @@ Escribe `/` en chat para ver los slash commands:
 - `/cuestionar` — auditar calidad de tests con mutation thinking.
 - `/revisar-bd` — auditar base de datos (4 categorias).
 
+Skills auxiliares (auto-invocables, sin slash):
+- `tests-skill` — convenciones para generar tests por stack.
+- `legacy-testing-skill` — characterization tests para legacy.
+- `database-skill` — diseno y auditoria de BD.
+- `prompt-skill` — manual del usuario para redactar prompts profesionales (patron RACEO).
+
 ## Reglas de oro
 
 1. Toda la documentacion vive en `/docs/`. No crear subcarpetas `docs/` internas.
@@ -31,6 +38,8 @@ Escribe `/` en chat para ver los slash commands:
 4. Las decisiones no triviales se registran en `decisions-log.md` como ADRs inmutables.
 5. En codigo legacy: primero congelar comportamiento con characterization tests, luego cambiar.
 6. En BD: primero auditar, luego cambiar. Migraciones destructivas solo con patron Expand-Contract.
+7. **Implementacion paso a paso:** si un plan toca mas de 2 archivos, aplicar `On(implementation_phase)` con paradas obligatorias entre archivos.
+8. **Prompts profesionales:** consultar `prompt-skill` para redactar prompts complejos siguiendo el patron RACEO.
 
 ## SSOT (Single Source of Truth)
 

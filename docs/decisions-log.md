@@ -29,6 +29,31 @@ Cada decision se registra con:
 
 ---
 
+## Decisiones de comportamiento ad-hoc
+
+Durante la planificacion de una feature compleja (en `On(implementation_phase)` o tras un plan del Agent), aparecen a menudo preguntas semanticas que el enunciado no aclara: "¿que devuelve el avg si todos los scores son nulos?", "¿este endpoint solo actualiza el puntero o tambien crea un registro?", "¿que filtro implicito hay detras de palabras como 'en proceso'?".
+
+Estas decisiones se etiquetan como `C1`, `C2`, `C3`... durante el plan, se confirman explicitamente con el usuario antes de implementar, y se documentan aqui como ADR. Formato sugerido:
+
+```
+ADR-XXX — Decisiones de comportamiento de [feature]
+
+Estado: Vigente
+
+Contexto: durante la planificacion de [feature] surgieron N preguntas
+semanticas no cubiertas por el enunciado original. Se confirmaron con
+el usuario en sesion antes de implementar.
+
+Decisiones:
+- C1 (titulo corto): decision tomada. Razon: ...
+- C2 (titulo corto): decision tomada. Razon: ...
+- C3 (titulo corto): decision tomada. Razon: ...
+```
+
+Esto evita que el "porque la IA lo decidio asi" sea la justificacion en code reviews. La justificacion correcta es "porque tomamos esta decision por estas razones, registrada en ADR-XXX".
+
+---
+
 ## ADR-000 (plantilla - NO BORRAR)
 
 **Fecha**: YYYY-MM-DD  

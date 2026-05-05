@@ -91,15 +91,41 @@ describe('validateEmail', () => {
 });
 ```
 
-Mock de Prisma:
+Mock de Prisma — **dos patrones según el código de producción**:
+
+**Patrón A (recomendado, funciona siempre)** — usa `mockReturnValue` o `jest.fn(() => obj)` para garantizar que **todas** las instancias de `new PrismaClient()` devuelven el mismo objeto mockeado. Es obligatorio cuando el código de producción usa **Active Record** (cada modelo instancia su propio `PrismaClient` dentro del archivo):
 
 ```ts
+jest.mock('@prisma/client', () => {
+    const mPrisma = {
+        user: { findMany: jest.fn(), findUnique: jest.fn(), update: jest.fn() },
+    };
+    return { PrismaClient: jest.fn(() => mPrisma) };
+});
+
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient() as jest.Mocked<any>;
+
+// En cada test:
+beforeEach(() => jest.clearAllMocks());
+(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 1, name: 'Ana' });
+```
+
+**Patrón B (clásico, falla con Active Record)** — el que ves en muchos tutoriales. Usa `mockImplementation(() => ({...}))` que crea un objeto NUEVO en cada `new PrismaClient()`:
+
+```ts
+// ❌ NO USAR si el codigo de produccion hace `new PrismaClient()`
+//    dentro de cada modelo de dominio (Active Record)
 jest.mock('@prisma/client', () => ({
     PrismaClient: jest.fn().mockImplementation(() => ({
-        user: { create: jest.fn(), findUnique: jest.fn() },
+        user: { create: jest.fn() },
     })),
 }));
 ```
+
+**Por qué falla con Active Record:** si `Position.ts` hace `const prisma = new PrismaClient()` al cargar el módulo, esa es **una instancia**. Si en el test haces `new PrismaClient()`, es **otra instancia**. Configurar mocks en la del test no afecta a la de producción. Con `jest.fn(() => mPrisma)` ambas devuelven el mismo objeto y el mock funciona.
+
+**Regla:** ante la duda, usa el Patrón A. Funciona con repositorios separados, con Active Record y con singleton. El Patrón B solo funciona si toda la app comparte una sola instancia de `PrismaClient`.
 
 ### Python + pytest
 

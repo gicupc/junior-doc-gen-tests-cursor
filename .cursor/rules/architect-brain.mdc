@@ -104,6 +104,8 @@ Reconoce y ejecuta estos comandos cuando aparezcan en la conversacion:
 | "/cerrar" / "fuerza el checklist de cierre" | `cerrar` |
 | "/cuestionar" / "audita la calidad de la suite" | `cuestionar` |
 | "/revisar-bd" / "audita la base de datos" | `revisar-bd` |
+| "/onboarding" / "dame un mapa rapido" / "no conozco este codigo" | `onboarding` |
+| "implementa el plan" / "vamos al codigo" / "ejecuta el plan paso a paso" | `On(implementation_phase)` (disciplina de paradas mid-task) |
 
 ---
 
@@ -153,3 +155,5 @@ Reconoce y ejecuta estos comandos cuando aparezcan en la conversacion:
 - **Legacy primero congelar, luego cambiar:** En codigo legacy, nunca modificar sin haber capturado antes el comportamiento actual.
 - **Cobertura ≠ calidad:** Un test que pasa no garantiza que detecte bugs.
 - **BD primero auditar, luego cambiar:** En proyectos con BD, ejecutar `/revisar-bd` antes de cambios destructivos.
+- **Implementacion paso a paso:** Si un plan implica tocar mas de 2 archivos, aplicar `On(implementation_phase)` con paradas obligatorias entre archivos. La disciplina es lo que permite al usuario revisar a tiempo.
+- **Prompts profesionales:** El usuario consulta `@.cursor/skills/prompt-skill/SKILL.md` para redactar prompts complejos siguiendo el patron RACEO (Role + Objective + Context + Constraints + Expected Output).

@@ -37,6 +37,7 @@ La rule `architect-brain.mdc` se carga automáticamente con `alwaysApply: true`,
 | Comando         | Cuándo usarlo                                                                 |
 |-----------------|-------------------------------------------------------------------------------|
 | `/inicio`       | Proyecto vacío. Entrevista BMADT + docs + setup de tests + setup de BD si aplica. |
+| `/onboarding`   | Codebase ajeno (ejercicio de bootcamp, PR de un compañero, debug urgente). Mapa rápido en 6 secciones, sin generar docs. *(nuevo en v4.3)* |
 | `/regularizar`  | Proyecto con código pero sin docs. Menú [1][2][3][4]. La opción [4] incluye auditoría de BD. |
 | `/hoy`          | "¿Qué hacemos hoy?" Briefing con sugerencia concreta para el día.             |
 | `/nueva`        | Añadir funcionalidad. Activa la interrupción de seguridad antes de tocar código. |
@@ -67,7 +68,7 @@ El archivo `.cursor/mcp.json` incluye una plantilla para conectar Cursor a una B
 
 ---
 
-## Qué hace el sistema (los 7 pilares)
+## Qué hace el sistema (los 8 pilares)
 
 ### 1. Entrevista inicial estructurada (BMADT)
 
@@ -105,7 +106,11 @@ Tres niveles de auditoría disponibles:
 
 Filosofía común: **la IA detecta, el humano decide, el humano repara**.
 
-### 7. Retomar proyectos tras pausas
+### 7. Implementación disciplinada paso a paso *(nuevo en v4.3)*
+
+Cuando un plan acordado implica más de 2 archivos, se activa automáticamente `On(implementation_phase)`. El Agent anuncia los pasos atómicos antes de tocar nada y se detiene tras cada uno esperando "ok, sigue". Esto evita el clásico problema de que la IA encadene 5 archivos de un tirón y ya no haya forma de revisar a tiempo. También incluye un skill auxiliar (`prompt-skill`) con el patrón **RACEO** (Role + Objective + Context + Constraints + Expected Output) para que el usuario redacte prompts profesionales con plantillas y ejemplos.
+
+### 8. Retomar proyectos tras pausas
 
 `/hoy` lee los docs clave, ejecuta un mini health-check y devuelve un briefing de 10 líneas:
 
@@ -135,8 +140,9 @@ Filosofía común: **la IA detecta, el humano decide, el humano repara**.
 │   ├── mcp.json                     # Plantilla de configuración MCP
 │   ├── rules/
 │   │   └── architect-brain.mdc      # Rule global con alwaysApply: true
-│   └── skills/                      # 13 skills (10 commands + 3 auxiliares)
+│   └── skills/                      # 14 skills (11 commands + 3 auxiliares + 1 manual usuario)
 │       ├── inicio/SKILL.md
+│       ├── onboarding/SKILL.md           # nuevo en v4.3
 │       ├── regularizar/SKILL.md
 │       ├── hoy/SKILL.md
 │       ├── nueva/SKILL.md
@@ -148,7 +154,8 @@ Filosofía común: **la IA detecta, el humano decide, el humano repara**.
 │       ├── revisar-bd/SKILL.md
 │       ├── tests-skill/SKILL.md           # auto-invocable
 │       ├── legacy-testing-skill/SKILL.md  # auto-invocable
-│       └── database-skill/SKILL.md        # auto-invocable
+│       ├── database-skill/SKILL.md        # auto-invocable
+│       └── prompt-skill/SKILL.md          # auto-invocable, manual usuario (RACEO) - nuevo en v4.3
 ├── docs/                            # SSOT - plantillas
 │   ├── prd.md
 │   ├── architecture.md
@@ -176,6 +183,8 @@ Filosofía común: **la IA detecta, el humano decide, el humano repara**.
 8. **Legacy primero congelar, luego cambiar** — en código legacy, nunca modificar sin haber capturado antes el comportamiento actual.
 9. **Cobertura ≠ calidad** — un test que pasa no garantiza detectar bugs.
 10. **BD primero auditar, luego cambiar** — en proyectos con BD, ejecutar `/revisar-bd` antes de cambios destructivos.
+11. **Implementación paso a paso** *(nuevo en v4.3)* — si un plan toca más de 2 archivos, aplicar `On(implementation_phase)` con paradas obligatorias entre archivos.
+12. **Prompts profesionales** *(nuevo en v4.3)* — consultar `prompt-skill` para redactar prompts complejos siguiendo el patrón RACEO.
 
 ---
 
