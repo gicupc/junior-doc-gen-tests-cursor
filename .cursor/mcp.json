@@ -1,8 +1,8 @@
 {
-  "_comment_general": "Plantilla de configuracion MCP para Cursor. Descomenta y rellena el bloque que necesites. La regla critica: en produccion, los MCPs de BD deben ir en modo read-only.",
+  "_comment_general": "Plantilla de configuracion MCP para Cursor. Descomenta y rellena el bloque que necesites. La regla critica: en produccion, los MCPs de BD deben ir en modo read-only. Para frontend: activar solo los que aporten valor al escenario, documentarlos como ADR.",
 
   "mcpServers": {
-    "_comment_postgres": "Plantilla para Postgres local de desarrollo. Sustituye USER:PASS@HOST:PORT/DB por tu connection string real. Renombra postgres-template a algo descriptivo del proyecto (ej: postgres-myapp).",
+    "_comment_postgres": "BD Postgres local de desarrollo. Sustituye USER:PASS@HOST:PORT/DB por tu connection string real. Renombra postgres-template a algo descriptivo (ej: postgres-myapp). REGLA: en produccion, modo read-only.",
     "postgres-template": {
       "command": "npx",
       "args": [
@@ -10,6 +10,53 @@
         "@modelcontextprotocol/server-postgres",
         "postgresql://USER:PASS@localhost:5432/DBNAME"
       ]
+    },
+
+    "_comment_figma_dev_mode": "Figma Dev Mode MCP server (oficial). Lee tokens, jerarquia y component mappings estructurados. Requiere Dev o Full seat en Figma. Sustituye TU_TOKEN por tu Personal Access Token de Figma (Settings -> Account -> Personal access tokens). Util cuando el equipo de diseno trabaja en Figma con Dev Mode activo. ACTIVAR descomentando el bloque siguiente:",
+    "_figma-dev-mode": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-developer-mcp",
+        "--figma-api-key=TU_FIGMA_PERSONAL_ACCESS_TOKEN"
+      ]
+    },
+
+    "_comment_shadcn": "shadcn MCP server. Da acceso al registro de >6.000 bloques de shadcn/ui. Util cuando el stack incluye shadcn/ui y se buscan bloques pre-construidos (auth flows, dashboards, formularios, hero sections). ACTIVAR descomentando el bloque siguiente:",
+    "_shadcn": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@jpisnice/shadcn-ui-mcp-server"
+      ]
+    },
+
+    "_comment_chrome_devtools": "Chrome DevTools MCP server (oficial Google). 26 herramientas en 6 categorias para auditar DOM, CSS, performance y networking de paginas en runtime. Util durante auditorias y debugging de Core Web Vitals. ACTIVAR descomentando el bloque siguiente:",
+    "_chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp"
+      ]
+    },
+
+    "_comment_playwright": "Playwright MCP server (Microsoft). Automatizacion de navegador sobre el accessibility tree (determinista, sin modelo de vision). Util para tests E2E manuales desde el chat, validacion visual y debugging de flujos. ACTIVAR descomentando el bloque siguiente:",
+    "_playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
     }
-  }
+  },
+
+  "_instrucciones_de_uso": [
+    "1. Identifica que MCP necesitas segun el escenario de tu proyecto.",
+    "2. Renombra la clave que empieza por '_' (ej. '_figma-dev-mode' -> 'figma-dev-mode') para activar ese servidor.",
+    "3. Sustituye los placeholders (TU_FIGMA_PERSONAL_ACCESS_TOKEN, USER:PASS, etc.) por valores reales.",
+    "4. Reinicia Cursor para que detecte los cambios.",
+    "5. Documenta los MCP servers activos en docs/decisions-log.md como ADR.",
+    "6. NO commitees credenciales reales: usa variables de entorno o un archivo mcp.json local fuera del repositorio.",
+    "7. En produccion, los MCPs de BD deben configurarse SIEMPRE en modo read-only."
+  ]
 }

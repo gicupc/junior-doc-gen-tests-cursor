@@ -1,11 +1,11 @@
 ================================================================================
- MANUAL OPERATIVO: ARCHITECT-BRAIN para CURSOR
- (Testing + Decisions + Sync + Database + Antidrift)
+ MANUAL OPERATIVO: ARCHITECT-BRAIN v4.4 (Cursor Edition)
+ (Frontend + MCP + Testing + Decisions + Sync + Database + Implementation Phase)
 ================================================================================
 
 Sistema de scaffolding para Cursor que mantiene documentacion, codigo, tests,
-decisiones y base de datos sincronizados a lo largo del ciclo de vida del
-proyecto.
+decisiones, base de datos y frontend (accesibilidad + Core Web Vitals +
+seguridad) sincronizados a lo largo del ciclo de vida del proyecto.
 
 Esta es la version Cursor del sistema. Existe tambien la version Windsurf:
 https://github.com/gicupc/junior-doc-gen-tests
@@ -25,83 +25,207 @@ asi que las reglas globales del sistema estan presentes en cada chat sin que
 tengas que invocarlas.
 
 --------------------------------------------------------------------------------
- SLASH COMMANDS DISPONIBLES (11 skills con disable-model-invocation)
+ SLASH COMMANDS DISPONIBLES (12 skills con disable-model-invocation)
 --------------------------------------------------------------------------------
 Las skills viven en .cursor/skills/<nombre>/SKILL.md. Las que tienen
 disable-model-invocation: true se comportan como slash commands clasicos
 (solo se invocan manualmente con /). Las skills auxiliares (sin esa linea)
 se cargan automaticamente cuando la IA detecta que aplican.
 
-+------------------+------------------------------------------------------------+
-| Comando          | Cuando usarlo                                              |
-+------------------+------------------------------------------------------------+
-| /inicio          | Proyecto vacio. Entrevista BMADT + docs + setup de tests   |
-|                  | + setup de BD si aplica.                                   |
-| /onboarding      | Codebase ajeno (ejercicio bootcamp, PR de companero, debug |
-|                  | urgente). Mapa rapido en 6 secciones, sin generar docs.    |
-|                  | NUEVO en v4.3.                                             |
-| /regularizar     | Proyecto con codigo pero sin docs. Menu [1][2][3][4]. La   |
-|                  | opcion [4] incluye auditoria de BD si hay.                 |
-| /hoy             | "Que hacemos hoy." Briefing con sugerencia para el dia.    |
-| /nueva           | Anadir funcionalidad o modulo. Con interrupcion de         |
-|                  | seguridad antes de tocar codigo.                           |
-| /reparar         | Corregir un bug. Si no esta cubierto, primero escribe el   |
-|                  | test que lo reproduce, luego el fix.                       |
-| /decidir         | Cambiar una decision pasada (stack, testing, alcance, BD). |
-|                  | Propaga cambios a los docs afectados sin perder historico. |
-| /sync            | Detectar drift entre codigo y documentacion. Solo reporta. |
-| /cerrar          | Forzar checklist de sincronizacion si sospechas que se     |
-|                  | salto al cerrar una tarea anterior.                        |
-| /cuestionar      | Auditar la CALIDAD real de la suite de tests con mutation  |
-|                  | thinking. No instala nada; plantea mutaciones.             |
-| /revisar-bd      | Auditar la BD: modelo, seguridad, rendimiento, calidad de  |
-|                  | datos. Solo reporta, no modifica nada.                     |
-+------------------+------------------------------------------------------------+
++----------------------+--------------------------------------------------------+
+| Comando              | Cuando usarlo                                          |
++----------------------+--------------------------------------------------------+
+| /inicio              | Proyecto vacio. Entrevista BMADT + docs + setup tests  |
+|                      | + setup BD si aplica + setup FRONTEND si aplica.       |
+| /onboarding          | Codebase ajeno. Mapa rapido en 6 secciones, sin docs.  |
+| /regularizar         | Proyecto con codigo pero sin docs. Menu [1][2][3][4].  |
+|                      | La opcion [4] incluye auditoria BD y frontend.         |
+| /hoy                 | "Que hacemos hoy." Briefing con sugerencia para el dia.|
+| /nueva               | Anadir funcionalidad. Interrupcion de seguridad antes  |
+|                      | de tocar codigo.                                       |
+| /reparar             | Corregir un bug. Si no esta cubierto, primero el test  |
+|                      | que lo reproduce, luego el fix.                        |
+| /decidir             | Cambiar una decision pasada (stack, testing, BD,       |
+|                      | frontend). Propaga sin perder historico.               |
+| /sync                | Detectar drift entre codigo y documentacion.           |
+| /cerrar              | Forzar checklist de sincronizacion.                    |
+| /cuestionar          | Auditar la CALIDAD real de la suite de tests con       |
+|                      | mutation thinking.                                     |
+| /revisar-bd          | Auditar la BD: modelo, seguridad, rendimiento, calidad |
+|                      | de datos. Solo reporta, no modifica.                   |
+| /revisar-frontend    | Auditar el frontend: stack, seguridad, Core Web Vitals,|
+|                      | accesibilidad WCAG 2.2 AA. Solo reporta. NUEVO v4.4.   |
++----------------------+--------------------------------------------------------+
 
 Skills auxiliares (auto-invocables, sin slash):
 - tests-skill           — convenciones para generar tests por stack.
 - legacy-testing-skill  — characterization tests para legacy.
 - database-skill        — diseno y auditoria de BD.
+- frontend-skill        — diseno y auditoria de frontend (NUEVO v4.4).
+- visual-testing-skill  — tests UI + axe + Playwright + visual diff (NUEVO v4.4).
 - prompt-skill          — manual del usuario para redactar prompts profesionales
-                          siguiendo el patron RACEO. NUEVO en v4.3.
+                          siguiendo el patron RACEO.
 
 Puedes pasar contexto despues del comando. Ejemplo:
   /nueva quiero anadir exportacion a PDF en el modulo de prompts
-  /inicio aplicacion web para gestionar recetas, PHP 8 + MySQL + Bootstrap 5
+  /inicio aplicacion web para gestionar recetas, Next.js + Postgres
   /cuestionar audita los tests del modulo de validacion
   /revisar-bd auditoria completa del modelo y datos
+  /revisar-frontend auditoria de accesibilidad y CWV
 
 --------------------------------------------------------------------------------
  CICLO DE VIDA TIPICO
 --------------------------------------------------------------------------------
-Dia 1  (arranque)       -> /inicio
+Dia 1 (arranque)        -> /inicio
 Dias 1-N (desarrollo)   -> /nueva y /reparar para cada tarea
 Vuelves tras pausa      -> /hoy
 Cambias de opinion      -> /decidir
 Sospechas drift         -> /sync
 Dudas de la calidad     -> /cuestionar
 Sospechas BD            -> /revisar-bd
+Sospechas frontend      -> /revisar-frontend
 Quieres forzar cierre   -> /cerrar
 
 Para proyectos que ya existen sin documentacion:
 Dia 1 (toma de control) -> /regularizar (elige opcion [4] para cubrir con tests)
-                            La auditoria de BD se ejecuta dentro si hay BD.
+                            La auditoria de BD y frontend se ejecutan dentro
+                            si aplican.
 Resto del ciclo         -> igual que arriba
 
 --------------------------------------------------------------------------------
- CONFIGURACION DE MCP DE BASE DE DATOS
+ CONFIGURACION DE MCP SERVERS
 --------------------------------------------------------------------------------
-El archivo .cursor/mcp.json contiene una plantilla para conectar Cursor a una
-BD Postgres local. Para usarla:
+El archivo .cursor/mcp.json contiene plantillas COMENTADAS para los MCP servers
+mas utiles en el flujo de desarrollo:
 
+- postgres-template      -> BD Postgres (activado por defecto, renombrar y
+                            configurar connection string)
+- _figma-dev-mode        -> Figma Dev Mode MCP (descomentar para activar)
+- _shadcn                -> shadcn MCP para acceso a bloques (descomentar)
+- _chrome-devtools       -> Chrome DevTools MCP para auditoria runtime
+- _playwright            -> Playwright MCP para validacion visual + E2E
+
+Para activar un MCP:
 1. Abre .cursor/mcp.json.
-2. Renombra "postgres-template" a algo descriptivo (ej. "postgres-miproyecto").
-3. Sustituye la connection string por la de tu BD local de desarrollo.
-4. Reinicia Cursor para que detecte el MCP.
+2. Renombra la clave que empieza por "_" (ej. "_figma-dev-mode" -> "figma-dev-mode").
+3. Sustituye los placeholders (TU_FIGMA_PERSONAL_ACCESS_TOKEN, USER:PASS, etc.).
+4. Reinicia Cursor para que detecte los cambios.
+5. Documenta los MCP servers activos en docs/decisions-log.md como ADR.
 
 REGLA CRITICA: En produccion, los MCPs de BD deben ir en modo READ-ONLY.
-Para desarrollo local con datos de prueba, full-access es aceptable. Pero
-nunca conectar el MCP en modo escritura contra una BD con datos reales.
+Para desarrollo local con datos de prueba, full-access es aceptable.
+
+--------------------------------------------------------------------------------
+ QUE HACE CADA COMANDO (detalle)
+--------------------------------------------------------------------------------
+
+/inicio
+  Ejecuta On(project_start). Lanza la entrevista BMADT:
+    B (Beneficio)  - objetivo y valor del proyecto.
+    M (Mecanismo)  - stack tecnico e integraciones.
+    A (Alcance)    - modulos del MVP.
+    D (Datos)      - entidades y flujos criticos.
+    T (Testing)    - nivel de cobertura: basico, estandar, exhaustivo.
+  Al cerrar la entrevista, genera todos los docs en /docs/ (incluyendo
+  decisions-log.md con las ADRs iniciales), ejecuta On(testing_setup),
+  Y SI HAY BD, ejecuta tambien On(database_setup), Y SI HAY FRONTEND,
+  ejecuta tambien On(frontend_setup): propone stack canonico 2026
+  (Next.js + TS estricto + Tailwind v4 + shadcn + Biome + Zod), pregunta
+  sobre flujo diseno-a-codigo (Figma con Dev Mode, capturas, sin diseno),
+  recomienda MCP servers a activar (descomenta los bloques en .cursor/mcp.json),
+  configura headers de seguridad, genera frontend-strategy.md. BLOQUEA la
+  escritura de codigo de dominio hasta que apruebes.
+
+/onboarding
+  Codebase ajeno: ejercicio bootcamp, PR de companero, debug urgente.
+  Mapa puntual en 6 secciones (stack, capas, traza de un endpoint,
+  modelo de datos, tests, convenciones). NO genera docs ni adopta el
+  proyecto. Diferencia explicita con /regularizar.
+
+/regularizar
+  Proyectos existentes sin documentacion. Escanea codigo + BD + frontend
+  si existen, y ofrece:
+    [1] Regularizar          - genera blueprints y docs sin tocar tests.
+    [2] Evolucionar          - usa mejor /nueva directamente.
+    [3] Reparar              - usa mejor /reparar directamente.
+    [4] Regularizar + tests + auditar BD + auditar frontend - todo lo
+                                anterior mas setup de tests, cobertura
+                                de logica critica, auditoria completa
+                                de BD si aplica, auditoria completa de
+                                frontend si aplica.
+  En [4]: tests-skill, legacy-testing-skill (si legacy detectado),
+  database-skill (si BD), frontend-skill (si frontend), visual-testing-skill
+  (si UI con interaccion). Genera audits y tickets correspondientes.
+
+/hoy
+  Ejecuta On(resume_project). Lee los docs clave (incluido
+  database-strategy.md y frontend-strategy.md si existen), corre la suite
+  de tests, detecta drift basico, y presenta un briefing de 10 lineas
+  con sugerencia concreta para el dia.
+
+/nueva
+  Anadir funcionalidad. Activa interrupcion de seguridad que obliga a
+  actualizar user-stories.md, roadmap.md, y si aplica blueprints.md,
+  testing-strategy.md, database-strategy.md, frontend-strategy.md
+  y decisions-log.md ANTES de tocar codigo. Al terminar, ejecuta
+  obligatoriamente On(task_complete) con el checklist visible.
+
+/reparar
+  Corregir un bug. Si el bug no esta cubierto por tests, el protocolo
+  obliga a escribir primero un test que lo reproduzca (rojo), y solo
+  despues implementar el fix (verde). Para bugs en BD, ademas exige
+  patron Expand-Contract si la reparacion es destructiva. Para bugs de
+  a11y, exige primero un test con axe-core.
+
+/decidir
+  Revisar una decision pasada sin romper lo existente. Pregunta solo lo
+  que cambia, calcula el impacto en los docs afectados (architecture,
+  testing-strategy, database-strategy, frontend-strategy), pide
+  confirmacion, anade nueva ADR al decisions-log, marca la anterior
+  como superseded y propaga los cambios.
+
+/sync
+  Ejecuta On(sync_check). Escanea codigo + BD + frontend vs docs y
+  reporta divergencias en 3 niveles (criticas, moderadas, menores).
+  NO arregla automaticamente.
+
+/cerrar
+  Ejecuta On(task_complete) de forma explicita. Muestra el checklist
+  de sincronizacion documental con cada doc marcado como actualizado
+  o "sin cambios" con justificacion.
+
+/cuestionar
+  Audita la CALIDAD real de la suite de tests sin instalar herramientas.
+  Filosofia: cobertura no es calidad. La IA propone 5+ mutaciones
+  realistas, evalua si tu suite las detectaria, lista las que sobreviven
+  y propone tests faltantes. Ofrece instalar mutation testing real
+  (Infection, StrykerJS, PIT, mutmut) como decision opt-in con ADR.
+
+/revisar-bd
+  Audita la base de datos en 4 categorias:
+    1. MODELO: tipos, indices, FKs, audit fields, normalizacion.
+    2. SEGURIDAD: PII en plano, restricciones debiles, RLS, secrets.
+    3. RENDIMIENTO: N+1, queries lentas, indices faltantes.
+    4. CALIDAD DE DATOS: nulos, duplicados, rangos, integridad.
+  Genera docs/database-audit.md y docs/investigacion_seguridad.md.
+  Crea tickets por hallazgos criticos/altos. NO modifica BD ni codigo.
+
+/revisar-frontend
+  Audita el frontend en 4 categorias:
+    1. STACK Y MANTENIBILIDAD: TS estricto, any, componentes gigantes,
+       dependencias, mezcla de librerias UI, linter, tests.
+    2. SEGURIDAD: secretos en cliente (NEXT_PUBLIC_*), dangerouslySet
+       sin sanitizar, validacion solo en cliente, headers (CSP, HSTS),
+       CORS, npm audit, codigo IA sin revision.
+    3. RENDIMIENTO (Core Web Vitals): LCP, INP, CLS reales (CrUX) si
+       hay despliegue; analisis estatico si no (imagenes, bundle,
+       code-splitting, fonts).
+    4. ACCESIBILIDAD WCAG 2.2 AA: alt, labels, contraste, teclado,
+       landmarks, headings, focus visible, prefers-reduced-motion.
+  Genera docs/frontend-audit.md y comparte hallazgos con
+  docs/investigacion_seguridad.md. Crea tickets por hallazgos criticos
+  y altos. Documenta TODOs de validacion manual con lector de pantalla.
+  NO modifica codigo. La IA detecta, el humano decide, el humano repara.
 
 --------------------------------------------------------------------------------
  REGLAS DE ORO
@@ -112,7 +236,8 @@ nunca conectar el MCP en modo escritura contra una BD con datos reales.
 2. NO PROLIFERACION
    No se crean archivos nuevos para cambios individuales. Se editan los
    maestros: prd.md, user-stories.md, roadmap.md, blueprints.md,
-   architecture.md, testing-strategy.md, database-strategy.md, decisions-log.md.
+   architecture.md, testing-strategy.md, database-strategy.md,
+   frontend-strategy.md, decisions-log.md.
 
 3. SINCRONIZACION
    Cada ticket finalizado debe marcarse con [x] en el roadmap, tener sus
@@ -124,8 +249,6 @@ nunca conectar el MCP en modo escritura contra una BD con datos reales.
 
 5. DECISIONES TRAZABLES
    Si no esta en decisions-log.md, no existe como decision oficial.
-   Las ADRs son inmutables: cuando cambia una decision se anade una nueva
-   ADR y la anterior queda marcada como superseded.
 
 6. ANTIDRIFT
    Ninguna tarea se cierra sin mostrar el checklist de sincronizacion.
@@ -135,39 +258,46 @@ nunca conectar el MCP en modo escritura contra una BD con datos reales.
    comportamiento actual con characterization tests.
 
 8. COBERTURA NO ES CALIDAD
-   Un test que pasa no garantiza que detecte bugs. La calidad real se
+   Un test que pasa no garantiza detectar bugs. La calidad real se
    audita con mutation thinking (/cuestionar).
 
 9. BD PRIMERO AUDITAR, LUEGO CAMBIAR
-   En proyectos con BD, ejecutar /revisar-bd antes de hacer cambios
-   destructivos. La IA detecta, el humano decide, el humano repara.
+   En proyectos con BD, ejecutar /revisar-bd antes de cambios destructivos.
 
-10. IMPLEMENTACION PASO A PASO (NUEVO en v4.3)
+10. FRONTEND PRIMERO MEDIR, LUEGO OPTIMIZAR (NUEVO v4.4)
+    En proyectos con frontend, ejecutar /revisar-frontend antes de
+    optimizaciones a ojo. WCAG 2.2 AA y Core Web Vitals son criterios
+    objetivos. Datos reales (CrUX, axe, lector de pantalla) > intuicion.
+
+11. IMPLEMENTACION PASO A PASO
     Si un plan implica tocar mas de 2 archivos, aplicar
     On(implementation_phase) con paradas obligatorias entre archivos.
-    Una modificacion = un paso. Tras cada paso, esperar "ok, sigue".
-    La disciplina es lo que permite al usuario revisar a tiempo.
 
-11. PROMPTS PROFESIONALES (NUEVO en v4.3)
-    Para tareas complejas (onboarding, planificacion, implementacion,
-    auditorias), el usuario consulta prompt-skill y aplica el patron
-    RACEO: Role + Objective + Context + Constraints + Expected Output.
+12. PROMPTS PROFESIONALES
+    El usuario consulta @.cursor/skills/prompt-skill/SKILL.md para
+    redactar prompts complejos siguiendo el patron RACEO.
+
+13. CODIGO IA BAJO REVISION (NUEVO v4.4)
+    Outputs de v0/Lovable/Bolt/Figma Make pasan obligatoriamente por
+    revision humana en Cursor/Windsurf/Claude Code antes de produccion.
+    Tasa reportada: ~40-45% de vulnerabilidades en outputs sin revisar.
 
 --------------------------------------------------------------------------------
  ESTRUCTURA DE ARCHIVOS
 --------------------------------------------------------------------------------
 /
-├── AGENTS.md                       # Resumen rapido para agentes
-├── README.md                       # Descripcion del sistema (GitHub)
-├── LICENSE                         # MIT
-├── inicio-chat.txt                 # Este archivo
+├── AGENTS.md                          # Resumen rapido para agentes (estandar)
+├── README.md                          # Descripcion del sistema
+├── LICENSE                            # MIT
+├── inicio-chat.txt                    # Este archivo
 ├── .cursor/
-│   ├── mcp.json                    # Plantilla de configuracion MCP
+│   ├── mcp.json                       # Plantillas MCP (Postgres + Figma + shadcn
+│   │                                  #   + Chrome DevTools + Playwright)
 │   ├── rules/
-│   │   └── architect-brain.mdc     # Rule global con alwaysApply: true
-│   └── skills/                     # 14 skills (11 commands + 3 aux + 1 manual)
+│   │   └── architect-brain.mdc        # Rule global con alwaysApply: true
+│   └── skills/                        # 16 skills (12 commands + 4 aux + RACEO)
 │       ├── inicio/SKILL.md
-│       ├── onboarding/SKILL.md         # nuevo en v4.3
+│       ├── onboarding/SKILL.md
 │       ├── regularizar/SKILL.md
 │       ├── hoy/SKILL.md
 │       ├── nueva/SKILL.md
@@ -177,34 +307,39 @@ nunca conectar el MCP en modo escritura contra una BD con datos reales.
 │       ├── cerrar/SKILL.md
 │       ├── cuestionar/SKILL.md
 │       ├── revisar-bd/SKILL.md
-│       ├── tests-skill/SKILL.md           # auto-invocable
-│       ├── legacy-testing-skill/SKILL.md  # auto-invocable
-│       ├── database-skill/SKILL.md        # auto-invocable
-│       └── prompt-skill/SKILL.md          # auto-invocable, manual usuario
-├── docs/                           # SSOT - Single Source of Truth
-│   ├── prd.md                      # Plantilla
+│       ├── revisar-frontend/SKILL.md       # NUEVO v4.4
+│       ├── tests-skill/SKILL.md            # auto-invocable
+│       ├── legacy-testing-skill/SKILL.md   # auto-invocable
+│       ├── database-skill/SKILL.md         # auto-invocable
+│       ├── frontend-skill/SKILL.md         # auto-invocable, NUEVO v4.4
+│       ├── visual-testing-skill/SKILL.md   # auto-invocable, NUEVO v4.4
+│       └── prompt-skill/SKILL.md           # auto-invocable, manual usuario
+├── docs/                              # SSOT - Single Source of Truth
+│   ├── prd.md
 │   ├── architecture.md
 │   ├── blueprints.md
 │   ├── user-stories.md
 │   ├── roadmap.md
 │   ├── testing-strategy.md
-│   ├── database-strategy.md
-│   └── decisions-log.md
+│   ├── database-strategy.md           # Si hay BD
+│   ├── frontend-strategy.md           # Si hay frontend (NUEVO v4.4)
+│   └── decisions-log.md               # ADRs (registro inmutable)
 └── prompts/
-    └── architect-brain.md          # Cerebro completo del sistema
+    └── architect-brain.md             # Cerebro completo del sistema
 
 --------------------------------------------------------------------------------
  PROTOCOLO DE DEFENSA SI LA IA SE DESVIA
 --------------------------------------------------------------------------------
 Si en algun momento Cursor ignora el sistema (escribe codigo sin actualizar
-docs, cierra una tarea sin checklist, modifica BD sin auditar antes, etc.),
-usa este recordatorio:
+docs, cierra una tarea sin checklist, modifica BD/frontend sin auditar antes,
+etc.), usa este recordatorio:
 
   "Sigue el protocolo de .cursor/rules/architect-brain.mdc: consulta
-   blueprints, testing-strategy, database-strategy y decisions-log, y
-   cierra con checklist."
+   blueprints, testing-strategy, database-strategy, frontend-strategy y
+   decisions-log, y cierra con checklist."
 
 Si el problema persiste, invoca /cerrar para forzar el checklist del trabajo
-reciente, /sync para auditar drift, o /revisar-bd para auditar la BD.
+reciente, /sync para auditar el estado real vs documentado, /revisar-bd o
+/revisar-frontend para auditar BD o frontend si sospechas que se ha desviado.
 
 ================================================================================
