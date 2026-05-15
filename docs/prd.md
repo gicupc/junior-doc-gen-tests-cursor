@@ -1,3 +1,4 @@
+<!-- TEMPLATE-PLACEHOLDER -->
 # Product Requirement Document (PRD): [NOMBRE_DEL_PROYECTO]
 
 ## 1. Visión y Contexto

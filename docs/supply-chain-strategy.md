@@ -1,3 +1,4 @@
+<!-- TEMPLATE-PLACEHOLDER -->
 # Supply Chain Strategy
 
 > Este documento lo rellena el Architect-Brain durante el protocolo `On(supply_chain_setup)` o al elegir la opción [4] en proyectos existentes con `package.json`.

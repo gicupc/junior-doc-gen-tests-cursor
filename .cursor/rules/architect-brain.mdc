@@ -5,7 +5,13 @@ alwaysApply: true
 # PROTOCOLO DE AUTOGESTION INTELIGENTE, GUARDIA DE DOCUMENTACION Y SINCRONIZACION
 
 REGLA INMEDIATA: Al iniciar, ejecuta `ls -R` para detectar el contexto.
-Si falta documentacion en `/docs/`, activa el protocolo de regularizacion o inicio automaticamente.
+
+Detecta uno de tres casos posibles:
+1. **`/docs/` vacio o inexistente** → activa `On(project_start)` automaticamente (CASO A).
+2. **`/docs/` poblado pero TODOS los `.md` tienen `<!-- TEMPLATE-PLACEHOLDER -->` como primera linea** → trata el proyecto como NUEVO (son templates del scaffolding sin rellenar). Procede como en el caso 1: arranca `On(project_start)` y sobrescribe los templates al rellenarlos.
+3. **`/docs/` poblado y al menos un `.md` NO tiene el marcador** → es un proyecto con trabajo previo. NO arranques `/inicio` automaticamente; ofrece el menu de CASO B (regularizar / evolucionar / reparar / regularizar+tests+BD+frontend).
+
+El marcador `<!-- TEMPLATE-PLACEHOLDER -->` se elimina de cada archivo al rellenarlo con contenido real. Una vez eliminado, el archivo deja de considerarse template.
 
 ---
 
@@ -44,6 +50,8 @@ Una tarea NO esta cerrada si el checklist no se ha mostrado.
 
 Si detectas que olvidaste actualizar un doc, NO cierres la tarea: pide permiso
 para anadir la actualizacion faltante antes de cerrar.
+
+**Verificacion anti-template-residual (v4.7.1)**: si la tarea creo o modifico algun archivo del SSOT en `/docs/`, antes de cerrar la tarea verifica que ningun archivo de `/docs/*.md` empiece con `<!-- TEMPLATE-PLACEHOLDER -->`. Equivalente a `head -1 docs/*.md | grep -c "TEMPLATE-PLACEHOLDER"` debe devolver `0`. Si encuentras algun archivo con marcador residual, eliminalo silenciosamente antes de mostrar el checklist final. Esta verificacion es obligatoria porque un marcador residual hace que el sistema vuelva a tratar el proyecto como "template sin rellenar" en futuras ejecuciones de `/inicio`, perdiendo el trabajo previo.
 
 ---
 

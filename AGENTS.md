@@ -1,6 +1,6 @@
 # Project Instructions for AI Agents
 
-Este proyecto usa el sistema **Architect-Brain v4.6** para garantizar calidad en codigo, documentacion, tests, base de datos, frontend (accesibilidad + Core Web Vitals + seguridad) y cadena de suministro (supply chain).
+Este proyecto usa el sistema **Architect-Brain v4.7.1** para garantizar calidad en codigo, documentacion, tests, base de datos, frontend (accesibilidad + Core Web Vitals + seguridad) y cadena de suministro (supply chain).
 
 Este archivo sigue el estandar `AGENTS.md` (donado al Linux Foundation en diciembre 2025, soportado nativamente por Cursor, Windsurf, Copilot, Codex, Zed, Warp, Aider, Devin y otros). Para Cursor, las reglas activas estan en `.cursor/rules/architect-brain.mdc` con `alwaysApply: true`.
 

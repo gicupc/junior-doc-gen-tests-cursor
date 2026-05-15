@@ -1,3 +1,4 @@
+<!-- TEMPLATE-PLACEHOLDER -->
 # Testing Strategy
 
 > Este documento lo rellena el Architect-Brain durante el protocolo `On(testing_setup)` o al elegir la opción [4] en proyectos existentes.

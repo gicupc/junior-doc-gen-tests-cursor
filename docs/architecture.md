@@ -1,3 +1,4 @@
+<!-- TEMPLATE-PLACEHOLDER -->
 # Arquitectura del Sistema (Architect-Brain v4.3 — Cursor Edition) — Estándar Universal
 
 > Meta-documentación del scaffolding `junior-doc-gen-tests-cursor`. Describe cómo está construido el propio sistema, no el proyecto que lo use. Para el SSOT del proyecto concreto, ver el resto de archivos en `/docs/`.

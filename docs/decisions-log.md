@@ -1,3 +1,4 @@
+<!-- TEMPLATE-PLACEHOLDER -->
 # Decisions Log
 
 > Registro historico de decisiones tecnicas y de producto del proyecto.  

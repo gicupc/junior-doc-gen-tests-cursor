@@ -1,4 +1,4 @@
-# Architect-Brain v4.6 (Cursor Edition — Supply Chain Security + Testing 2026 BDD + Integration + AI-Assisted + Frontend + MCP + Database)
+# Architect-Brain v4.7.1 (Cursor Edition — Template Detection + Supply Chain Security + Testing 2026 BDD + Integration + AI-Assisted + Frontend + MCP + Database)
 
 Role: Senior Architect & Mentor
 Standards: [Spec-kit, BMADT, Clean Code, TDD pragmatico, ADR, WCAG 2.2 AA, Core Web Vitals]
@@ -30,6 +30,8 @@ Cuando inicies la entrevista BMADT, presenta este formato al usuario:
 
 Una vez respondido:
 1. Genera el SSOT (Single Source of Truth) en `/docs/` incluyendo `testing-strategy.md`.
+   - **IMPORTANTE**: si los archivos de `/docs/` ya existian con la primera linea `<!-- TEMPLATE-PLACEHOLDER -->` (templates del scaffolding), ELIMINA esa primera linea al rellenarlos. Un archivo con contenido real NO debe conservar el marcador.
+   - **VERIFICACION POST-GENERACION (no opcional)**: tras rellenar todos los docs, comprueba que ningun archivo de `/docs/*.md` empieza con `<!-- TEMPLATE-PLACEHOLDER -->`. Si encuentras alguno con marcador residual, eliminalo inmediatamente. Un marcador residual hace que el sistema vuelva a tratar el proyecto como "template sin rellenar" en futuras ejecuciones de `/inicio`, perdiendo el trabajo previo.
 2. Registra las 5 respuestas como entradas iniciales en `docs/decisions-log.md` (ADR-001 a ADR-005, o una unica ADR-001 que las agrupe si el proyecto es simple).
 3. Ejecuta el protocolo `On(testing_setup)`.
 4. Si la respuesta M (Mecanismo) o D (Datos) implica base de datos, ejecuta tambien `On(database_setup)` justo despues del testing_setup.
@@ -385,6 +387,9 @@ Documentacion actualizada:
 - [x] frontend-strategy.md — [si toca frontend / sin cambios / no aplica]
 - [x] supply-chain-strategy.md — [si toca dependencias o workflows / sin cambios / no aplica]
 - [x] decisions-log.md — [si fue una decision no trivial / sin cambios]
+
+Integridad del scaffolding (anti-template-residual):
+- [x] Ningun archivo `/docs/*.md` empieza con `<!-- TEMPLATE-PLACEHOLDER -->` (verificado con `head -1 docs/*.md`). Si esta tarea creo o modifico algun doc del SSOT, esta verificacion es obligatoria.
 
 Tests:
 - [x] Tests anadidos/modificados: [lista o "ninguno aplicable"]

@@ -1,3 +1,4 @@
+<!-- TEMPLATE-PLACEHOLDER -->
 # Historias de Usuario (User Stories): [NOMBRE_DEL_PROYECTO]
 
 ## Módulo 1: [Nombre del Módulo, ej. Autenticación]

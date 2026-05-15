@@ -1,3 +1,4 @@
+<!-- TEMPLATE-PLACEHOLDER -->
 # Blueprints y Estándares Técnicos: [NOMBRE_DEL_PROYECTO]
 
 > **MODO ESPEJO ACTIVO:** Si este proyecto ya tiene código, la IA debe escanear los archivos para identificar y escribir aquí los estándares de:

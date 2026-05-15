@@ -1,3 +1,4 @@
+<!-- TEMPLATE-PLACEHOLDER -->
 # Database Strategy
 
 > Este documento lo rellena el Architect-Brain durante el protocolo `On(database_setup)` cuando el proyecto incluye base de datos. No editar a mano sin avisar a la IA — es parte del SSOT.

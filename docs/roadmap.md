@@ -1,3 +1,4 @@
+<!-- TEMPLATE-PLACEHOLDER -->
 # Roadmap de Implementación: [NOMBRE_DEL_PROYECTO]
 
 ## Estado General: [ ] % Completado

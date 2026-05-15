@@ -1,6 +1,6 @@
 # Project Instructions for Claude Code
 
-Este proyecto usa el sistema **Architect-Brain v4.6** para garantizar calidad en codigo, documentacion, tests, base de datos, frontend y cadena de suministro (supply chain).
+Este proyecto usa el sistema **Architect-Brain v4.7.1** para garantizar calidad en codigo, documentacion, tests, base de datos, frontend y cadena de suministro (supply chain).
 
 > **Nota:** Claude Code lee este archivo (`CLAUDE.md`); Cursor lee `.cursor/rules/architect-brain.mdc`. Este archivo apunta a las mismas fuentes de verdad que Cursor, para que el sistema funcione identico en ambos entornos. NO duplica contenido.
 
