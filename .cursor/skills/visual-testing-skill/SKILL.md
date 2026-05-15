@@ -1,11 +1,13 @@
 ---
 name: visual-testing-skill
-description: Tests de UI con accesibilidad y E2E. Usar cuando el proyecto tenga frontend con interaccion. Cubre tres niveles - unitario (Vitest), componente (RTL + vitest-axe) y E2E + visual (Playwright + axe-core + opcionalmente pixelmatch). Complementa tests-skill (que cubre logica pura) con tests de UI renderizada y accesibilidad WCAG 2.2 AA.
+description: Tests de UI con accesibilidad y E2E. Usar cuando el proyecto tenga frontend con interaccion. Cubre tres niveles - unitario (Vitest), componente (RTL + vitest-axe) y E2E + visual (Playwright + axe-core + opcionalmente pixelmatch). Complementaria a tests-skill (logica pura), integration-testing-skill (capa intermedia) y bdd-skill (aceptacion). Cuando uses agentes IA para tests E2E, carga ademas ai-testing-skill (Playwright MCP/CLI, prompting, anti-patrones, trazabilidad de prompts, GDPR + EU AI Act).
 ---
 
 # Skill: Visual & Accessibility Testing
 
-Esta skill se activa cuando el proyecto tiene frontend y se desea cerrar el loop de validación visual y de accesibilidad de forma automática. Es complementaria a `tests-skill`: lo que aquella es para lógica pura, esta lo es para UI renderizada.
+Esta skill se activa cuando el proyecto tiene frontend y se desea cerrar el loop de validación visual y de accesibilidad de forma automática. Es complementaria a `tests-skill` (lógica pura), `integration-testing-skill` (capa intermedia) y `bdd-skill` (aceptación).
+
+Cuando uses agentes IA (Cursor, Claude Code, Copilot) para generar tests E2E, **carga además `ai-testing-skill`**: cubre Playwright MCP/CLI, patrones de prompting, anti-patrones, trazabilidad de prompts y cumplimiento normativo (GDPR, EU AI Act).
 
 ---
 
@@ -171,7 +173,7 @@ test.describe('Login flow', () => {
 - Multi-navegador real (Chromium + Firefox + Safari).
 - Multi-tab y multi-context nativos.
 - `@axe-core/playwright` es la integración oficial recomendada.
-- Soporta Playwright MCP server para que el agente IA pueda interactuar con el navegador desde el chat.
+- Soporta **Playwright MCP** (ya disponible como plantilla en `.cursor/mcp.json`) y **Playwright CLI** (recomendado para Cursor con filesystem por menor coste en tokens) para que el agente IA pueda generar y mantener tests E2E. Ver `ai-testing-skill` para setup, prompting y gates en CI.
 
 ### Loop visual con pixelmatch (opcional pero potente)
 
@@ -234,6 +236,26 @@ test('dashboard matches design baseline', async ({ page }, testInfo) => {
 **Cuándo NO montar pixelmatch:**
 - Proyectos con UI dinámica (mucha animación, datos en tiempo real, anuncios).
 - Proyectos sin diseño de partida estricto.
+
+---
+
+## Alternativas SaaS para visual regression
+
+Montar `pixelmatch` da control total sin coste, pero hay plataformas SaaS que aportan colaboración, baselines compartidos entre branches y UI de aprobación de diffs:
+
+| Herramienta | Cuándo elegirla | Notas |
+|---|---|---|
+| **Chromatic** | El proyecto ya usa Storybook | Free tier limitado; integración nativa con Storybook |
+| **Percy** (BrowserStack) | El equipo ya usa BrowserStack | Free tier 5k snapshots/mes |
+| **Applitools** | Suite enterprise grande, necesita visual AI semántico | Pricing por contacto; el más caro |
+| **Argos CI** | Alternativa open-friendly para Playwright/Cypress | Free tier generoso |
+| **Lost Pixel** | Open source self-hosted o cloud | Free OSS; opción más flexible |
+
+Recomendación por escenario: Chromatic si Storybook, Argos CI o Lost Pixel para empezar barato con Playwright, Applitools si la suite es grande y necesitas visual AI semántico, Percy si ya pagas BrowserStack.
+
+La decisión se documenta en `docs/frontend-strategy.md` como ADR (criterios: stack existente, coste, necesidad de visual AI semántico, control sobre baselines).
+
+Ver además `ai-testing-skill` para la diferencia entre **visual regression con ML clásico** (Chromatic, Percy, Argos, Lost Pixel) y **visual AI semántico** (Applitools nivel avanzado, Mabl). No confundirlos: el semántico es más tolerante pero menos determinista.
 
 ---
 

@@ -8,7 +8,7 @@ Sistema de scaffolding para [Cursor](https://cursor.com) que convierte al Agent 
 
 ## Qué resuelve
 
-Cuando trabajas con una IA generando código día tras día, aparecen siete problemas silenciosos:
+Cuando trabajas con una IA generando código día tras día, aparecen ocho problemas silenciosos:
 
 1. **Los docs se quedan atrás del código** — nadie los actualiza porque no duele inmediatamente.
 2. **Las decisiones técnicas se olvidan** — ¿por qué elegimos esta librería? Nadie se acuerda tres meses después.
@@ -17,8 +17,9 @@ Cuando trabajas con una IA generando código día tras día, aparecen siete prob
 5. **Cobertura ≠ calidad** — tests que pasan no garantizan detectar bugs reales.
 6. **Las bases de datos crecen sin auditoría** — índices faltantes, datos personales sin proteger, queries lentas que nadie detecta.
 7. **El frontend acumula deuda invisible** — accesibilidad rota, Core Web Vitals en rojo, secretos expuestos en variables públicas, código IA sin revisar.
+8. **Los tests generados por IA son test theater** — cobertura alta, capacidad de detectar regresiones baja, sin trazabilidad de qué prompt los generó.
 
-Este sistema impone protocolos que obligan a la IA a resolver los siete problemas por diseño.
+Este sistema impone protocolos que obligan a la IA a resolver los ocho problemas por diseño.
 
 ---
 
@@ -33,7 +34,7 @@ La rule `architect-brain.mdc` se carga automáticamente con `alwaysApply: true`,
 
 ---
 
-## Slash commands disponibles (12)
+## Slash commands disponibles (13)
 
 | Comando             | Cuándo usarlo                                                                 |
 |---------------------|-------------------------------------------------------------------------------|
@@ -48,7 +49,8 @@ La rule `architect-brain.mdc` se carga automáticamente con `alwaysApply: true`,
 | `/cerrar`           | Forzar checklist de sincronización si sospechas que se saltó.                 |
 | `/cuestionar`       | Auditar la calidad real de los tests con mutation thinking.                   |
 | `/revisar-bd`       | Auditar la BD: modelo, seguridad, rendimiento, calidad de datos.              |
-| `/revisar-frontend` | Auditar el frontend: stack, seguridad, Core Web Vitals, accesibilidad WCAG 2.2 AA. *(nuevo en v4.4)* |
+| `/revisar-frontend` | Auditar el frontend: stack, seguridad, Core Web Vitals, accesibilidad WCAG 2.2 AA. |
+| `/bdd`              | Adoptar Behavior-Driven Development (verifica aplicabilidad, instala herramienta según stack 2026, primera sesión Three Amigos asistida). *(nuevo en v4.5)* |
 
 ---
 
@@ -78,7 +80,7 @@ Para activar uno: renombra la clave del bloque (de `_figma-dev-mode` a `figma-de
 
 ---
 
-## Qué hace el sistema (los 8 pilares)
+## Qué hace el sistema (los 9 pilares)
 
 ### 1. Entrevista inicial estructurada (BMADT)
 
@@ -135,6 +137,17 @@ Filosofía común: **la IA detecta, el humano decide, el humano repara**. Las au
 
 Cuando un plan acordado implica más de 2 archivos, se activa automáticamente `On(implementation_phase)`. El Agent anuncia los pasos atómicos antes de tocar nada y se detiene tras cada uno esperando "ok, sigue". Esto evita el clásico problema de que la IA encadene 5 archivos de un tirón y ya no haya forma de revisar a tiempo. También incluye un skill auxiliar (`prompt-skill`) con el patrón **RACEO** para que el usuario redacte prompts profesionales con plantillas y ejemplos.
 
+### 9. Adopción controlada de BDD y testing con IA *(nuevo en v4.5)*
+
+v4.5 añade dos capas nuevas al stack de testing con 4 garantías:
+
+1. **BDD opt-in, no por defecto**: `/bdd` solo procede si hay stakeholders no técnicos y disposición a Three Amigos. Sin esas precondiciones, Gherkin es disfraz técnico y el sistema lo bloquea.
+2. **Validación humana del `.feature` ANTES de step definitions**: cada `.feature` debe ser aprobado por humanos antes de que la IA genere código de test.
+3. **Trazabilidad obligatoria de prompts**: cada test generado por LLM debe tener su `*.prompt.md` asociado y versionado en Git. PR sin auto-merge, code review humano explicito.
+4. **Gates de cumplimiento normativo**: para apps de alto riesgo bajo EU AI Act (Annex III: empleo, crédito, educación, salud, justicia), los tests entran en el expediente de calidad junto a prompts y revisiones. AI literacy obligatoria desde febrero 2025.
+
+Skills nuevas: `bdd-skill`, `integration-testing-skill`, `ai-testing-skill`. Workflow nuevo: `/bdd`.
+
 ---
 
 ## Stack canónico para frontend nuevo (2026)
@@ -181,7 +194,7 @@ Plantillas comentadas en `.cursor/mcp.json` listas para activar.
 │   │                                  #   + Chrome DevTools + Playwright)
 │   ├── rules/
 │   │   └── architect-brain.mdc        # Rule global con alwaysApply: true
-│   └── skills/                        # 18 skills (12 commands + 5 auxiliares + RACEO)
+│   └── skills/                        # 21 skills (13 commands + 8 auxiliares incluido RACEO)
 │       ├── inicio/SKILL.md
 │       ├── onboarding/SKILL.md
 │       ├── regularizar/SKILL.md
@@ -193,12 +206,16 @@ Plantillas comentadas en `.cursor/mcp.json` listas para activar.
 │       ├── cerrar/SKILL.md
 │       ├── cuestionar/SKILL.md
 │       ├── revisar-bd/SKILL.md
-│       ├── revisar-frontend/SKILL.md         # nuevo v4.4
+│       ├── revisar-frontend/SKILL.md         # v4.4
+│       ├── bdd/SKILL.md                      # nuevo v4.5
 │       ├── tests-skill/SKILL.md              # auto-invocable
 │       ├── legacy-testing-skill/SKILL.md     # auto-invocable
 │       ├── database-skill/SKILL.md           # auto-invocable
-│       ├── frontend-skill/SKILL.md           # auto-invocable, nuevo v4.4
-│       ├── visual-testing-skill/SKILL.md     # auto-invocable, nuevo v4.4
+│       ├── frontend-skill/SKILL.md           # auto-invocable, v4.4
+│       ├── visual-testing-skill/SKILL.md     # auto-invocable, v4.4
+│       ├── bdd-skill/SKILL.md                # auto-invocable, nuevo v4.5
+│       ├── integration-testing-skill/SKILL.md # auto-invocable, nuevo v4.5
+│       ├── ai-testing-skill/SKILL.md         # auto-invocable, nuevo v4.5
 │       └── prompt-skill/SKILL.md             # auto-invocable, manual usuario (RACEO)
 ├── docs/                              # SSOT - plantillas
 │   ├── prd.md
@@ -228,9 +245,13 @@ Plantillas comentadas en `.cursor/mcp.json` listas para activar.
 8. **Legacy primero congelar, luego cambiar** — en código legacy, nunca modificar sin haber capturado antes el comportamiento actual.
 9. **Cobertura ≠ calidad** — un test que pasa no garantiza detectar bugs.
 10. **BD primero auditar, luego cambiar** — en proyectos con BD, ejecutar `/revisar-bd` antes de cambios destructivos.
-11. **Frontend primero medir, luego optimizar** *(nuevo en v4.4)* — WCAG 2.2 AA y CWV son criterios objetivos. Datos reales (CrUX, axe, lector de pantalla) > intuición.
+11. **Frontend primero medir, luego optimizar** — WCAG 2.2 AA y CWV son criterios objetivos. Datos reales (CrUX, axe, lector de pantalla) > intuición.
 12. **Implementación paso a paso** — si un plan toca >2 archivos, aplicar `On(implementation_phase)` con paradas obligatorias.
-13. **Código IA bajo revisión** *(nuevo en v4.4)* — outputs de v0/Lovable/Bolt/Figma Make pasan obligatoriamente por revisión humana en Cursor/Windsurf/Claude Code antes de producción.
+13. **Código IA bajo revisión** — outputs de v0/Lovable/Bolt/Figma Make pasan obligatoriamente por revisión humana en Cursor/Windsurf/Claude Code antes de producción.
+14. **BDD sin Three Amigos NO se adopta** *(nuevo en v4.5)* — Gherkin sin conversación previa es disfraz técnico. Si el equipo no está dispuesto, registrar ADR "BDD descartado" y volver más adelante.
+15. **Tests IA trazables** *(nuevo en v4.5)* — cada test generado por LLM tiene su `*.prompt.md` asociado, pasa code review humano y NUNCA se mergea por auto-aprobación. Queries accesibles obligatorias.
+16. **AI literacy obligatoria** *(nuevo en v4.5)* — EU AI Act exige formación en uso responsable de IA desde febrero 2025. Equipo formado antes de generalizar uso de agentes IA.
+17. **GDPR no negociable** *(nuevo en v4.5)* — NO enviar PII a LLMs externos sin DPA válido. Para datos sensibles, LLMs locales (Ollama, vLLM) o proveedores con región europea y DPA firmado.
 
 ---
 
@@ -252,7 +273,8 @@ Evolución:
 - **v4.1**: testing integrado, ADRs inmutables, antidrift por checklist, slash commands, characterization tests, mutation thinking.
 - **v4.2**: base de datos como ciudadano de primera clase — `On(database_setup)`, `On(database_audit)`, `/revisar-bd`, `database-skill`, `database-strategy.md`.
 - **v4.3**: `/onboarding` para codebases ajenos, `On(implementation_phase)` con paradas obligatorias entre archivos, patrón Active-Record-friendly para mocks de Prisma, `prompt-skill` con patrón RACEO.
-- **v4.4** *(actual)* — **Frontend & MCP Edition**: añade frontend como ciudadano de primera clase. `On(frontend_setup)` automático para proyectos nuevos con stack canónico 2026 (Next.js + TS estricto + Tailwind v4 + shadcn + Biome + Zod). `On(frontend_audit)` y `/revisar-frontend` para proyectos existentes con auditoría de stack/seguridad/CWV/a11y. Skills nuevas `frontend-skill` y `visual-testing-skill`. Doc nuevo `frontend-strategy.md` en SSOT. Plantillas MCP de Figma Dev Mode, shadcn, Chrome DevTools y Playwright añadidas a `.cursor/mcp.json`. Reglas de oro 11, 12 y 13 sobre frontend, MCP servers y código IA bajo revisión.
+- **v4.4**: **Frontend & MCP Edition**: añade frontend como ciudadano de primera clase. `On(frontend_setup)` automático para proyectos nuevos con stack canónico 2026 (Next.js + TS estricto + Tailwind v4 + shadcn + Biome + Zod). `On(frontend_audit)` y `/revisar-frontend` para proyectos existentes con auditoría de stack/seguridad/CWV/a11y. Skills nuevas `frontend-skill` y `visual-testing-skill`. Doc nuevo `frontend-strategy.md` en SSOT. Plantillas MCP de Figma Dev Mode, shadcn, Chrome DevTools y Playwright añadidas a `.cursor/mcp.json`. Reglas de oro 11, 12 y 13 sobre frontend, MCP servers y código IA bajo revisión.
+- **v4.5** *(actual)* — **Testing 2026 Edition (BDD + Integration + AI-Assisted)**: paridad con la versión Windsurf v4.5. Añade tres capas al stack de testing como ciudadanos de primera clase: BDD opt-in con Three Amigos como precondición (skill nueva `bdd-skill`, workflow nuevo `/bdd`), integración con Supertest/MSW/Testcontainers/Pact (skill nueva `integration-testing-skill`), testing asistido por IA con Playwright MCP/CLI, trazabilidad de prompts y gates GDPR + EU AI Act (skill nueva `ai-testing-skill`). Recomendación 2026: Vitest sobre Jest en proyectos nuevos JS/TS. Reglas de oro 14, 15, 16 y 17 sobre BDD sin Three Amigos, tests IA trazables, AI literacy y GDPR.
 
 ---
 
@@ -267,4 +289,4 @@ MIT
 
 Además de Cursor, este sistema funciona también en **Claude Code** (la CLI de Anthropic) gracias al archivo `CLAUDE.md` añadido en la raíz del proyecto. Es un fichero delgado (~6 KB) que apunta a las fuentes de verdad existentes (`.cursor/rules/architect-brain.mdc`, `prompts/architect-brain.md`, las skills), por lo que no duplica contenido y no afecta al comportamiento de Cursor.
 
-Si abres Claude Code en un proyecto que tenga esta estructura instalada, lee `CLAUDE.md` automáticamente y aplica el mismo sistema Architect-Brain v4.4 que aplica Cursor: mismas reglas de oro, mismos protocolos `On(...)`, mismos slash commands.
+Si abres Claude Code en un proyecto que tenga esta estructura instalada, lee `CLAUDE.md` automáticamente y aplica el mismo sistema Architect-Brain v4.5 que aplica Cursor: mismas reglas de oro, mismos protocolos `On(...)`, mismos slash commands.

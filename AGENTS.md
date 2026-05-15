@@ -1,6 +1,6 @@
 # Project Instructions for AI Agents
 
-Este proyecto usa el sistema **Architect-Brain v4.4** para garantizar calidad en codigo, documentacion, tests, base de datos y frontend (accesibilidad + Core Web Vitals + seguridad).
+Este proyecto usa el sistema **Architect-Brain v4.5** para garantizar calidad en codigo, documentacion, tests, base de datos y frontend (accesibilidad + Core Web Vitals + seguridad).
 
 Este archivo sigue el estandar `AGENTS.md` (donado al Linux Foundation en diciembre 2025, soportado nativamente por Cursor, Windsurf, Copilot, Codex, Zed, Warp, Aider, Devin y otros). Para Cursor, las reglas activas estan en `.cursor/rules/architect-brain.mdc` con `alwaysApply: true`.
 
@@ -27,13 +27,17 @@ Escribe `/` en el chat de Agent para ver los slash commands:
 - `/cuestionar` — auditar calidad de tests con mutation thinking.
 - `/revisar-bd` — auditar base de datos (4 categorias).
 - `/revisar-frontend` — auditar frontend (stack, seguridad, CWV, a11y WCAG 2.2 AA).
+- `/bdd` — adoptar Behavior-Driven Development (verifica aplicabilidad, instala herramienta segun stack 2026, primera sesion Three Amigos asistida, valida `.feature` antes de step definitions). *(nuevo en v4.5)*
 
 Skills auxiliares (auto-invocables, sin slash):
-- `tests-skill` — convenciones para generar tests por stack.
+- `tests-skill` — convenciones para generar tests unitarios por stack.
+- `integration-testing-skill` — tests de integracion con Supertest, MSW, Testcontainers, Pact. *(nuevo en v4.5)*
 - `legacy-testing-skill` — characterization tests para legacy.
 - `database-skill` — diseno y auditoria de BD.
 - `frontend-skill` — diseno y auditoria de frontend.
 - `visual-testing-skill` — tests de componente con axe + E2E con Playwright + visual diff.
+- `bdd-skill` — Gherkin, herramientas 2026 (playwright-bdd, @cucumber/cucumber, Reqnroll, Karate DSL), Three Amigos, anti-patrones de Gherkin por IA. *(nuevo en v4.5)*
+- `ai-testing-skill` — testing asistido por IA (Playwright MCP/CLI, prompting, anti-patrones, GDPR + EU AI Act). *(nuevo en v4.5)*
 - `prompt-skill` — manual del usuario para redactar prompts profesionales (patron RACEO).
 
 ## Stack canonico para proyectos NUEVOS con frontend (2026)
@@ -76,6 +80,9 @@ Configuracion en `.cursor/mcp.json` (ya incluye plantillas comentadas).
 8. **Implementacion paso a paso:** si un plan toca mas de 2 archivos, aplicar `On(implementation_phase)` con paradas obligatorias entre archivos.
 9. **Prompts profesionales:** consultar `prompt-skill` para redactar prompts complejos siguiendo el patron RACEO.
 10. **Codigo IA bajo revision:** outputs de v0/Lovable/Bolt/Figma Make pasan obligatoriamente por revision humana en Cursor/Windsurf/Claude Code antes de produccion.
+11. **BDD sin Three Amigos NO se adopta** *(nuevo en v4.5)*: Gherkin sin conversacion previa con stakeholders es disfraz tecnico. Si no se cumplen las precondiciones, registrar ADR "BDD descartado" y volver mas adelante.
+12. **Tests IA trazables** *(nuevo en v4.5)*: cada test generado por LLM tiene su `*.prompt.md` asociado, pasa code review humano y NUNCA se mergea por auto-aprobacion. Queries accesibles obligatorias (cero selectores fragiles).
+13. **AI literacy + GDPR** *(nuevo en v4.5)*: EU AI Act exige formacion en uso responsable de IA desde febrero 2025. NO enviar PII a LLMs externos sin DPA valido. Para apps de alto riesgo (Annex III), los tests forman parte del expediente de calidad.
 
 ## SSOT (Single Source of Truth)
 

@@ -1,11 +1,16 @@
 ================================================================================
- MANUAL OPERATIVO: ARCHITECT-BRAIN v4.4 (Cursor Edition)
- (Frontend + MCP + Testing + Decisions + Sync + Database + Implementation Phase)
+ MANUAL OPERATIVO: ARCHITECT-BRAIN v4.5 (Cursor Edition)
+ (Testing 2026: BDD + Integration + AI-Assisted + Frontend + MCP + Database)
 ================================================================================
 
 Sistema de scaffolding para Cursor que mantiene documentacion, codigo, tests,
 decisiones, base de datos y frontend (accesibilidad + Core Web Vitals +
 seguridad) sincronizados a lo largo del ciclo de vida del proyecto.
+
+v4.5 amplia el stack de testing con tres capas nuevas como ciudadanos de
+primera clase: BDD opt-in con Three Amigos, integracion con Supertest/MSW/
+Testcontainers, y testing asistido por IA con Playwright MCP/CLI + trazabilidad
+de prompts + gates GDPR / EU AI Act.
 
 Esta es la version Cursor del sistema. Existe tambien la version Windsurf:
 https://github.com/gicupc/junior-doc-gen-tests
@@ -25,7 +30,7 @@ asi que las reglas globales del sistema estan presentes en cada chat sin que
 tengas que invocarlas.
 
 --------------------------------------------------------------------------------
- SLASH COMMANDS DISPONIBLES (12 skills con disable-model-invocation)
+ SLASH COMMANDS DISPONIBLES (13 skills con disable-model-invocation)
 --------------------------------------------------------------------------------
 Las skills viven en .cursor/skills/<nombre>/SKILL.md. Las que tienen
 disable-model-invocation: true se comportan como slash commands clasicos
@@ -54,17 +59,28 @@ se cargan automaticamente cuando la IA detecta que aplican.
 | /revisar-bd          | Auditar la BD: modelo, seguridad, rendimiento, calidad |
 |                      | de datos. Solo reporta, no modifica.                   |
 | /revisar-frontend    | Auditar el frontend: stack, seguridad, Core Web Vitals,|
-|                      | accesibilidad WCAG 2.2 AA. Solo reporta. NUEVO v4.4.   |
+|                      | accesibilidad WCAG 2.2 AA. Solo reporta.               |
+| /bdd                 | Adoptar Behavior-Driven Development (verifica          |
+|                      | aplicabilidad, instala herramienta segun stack 2026,   |
+|                      | primera sesion Three Amigos asistida). NUEVO v4.5.     |
 +----------------------+--------------------------------------------------------+
 
 Skills auxiliares (auto-invocables, sin slash):
-- tests-skill           — convenciones para generar tests por stack.
-- legacy-testing-skill  — characterization tests para legacy.
-- database-skill        — diseno y auditoria de BD.
-- frontend-skill        — diseno y auditoria de frontend (NUEVO v4.4).
-- visual-testing-skill  — tests UI + axe + Playwright + visual diff (NUEVO v4.4).
-- prompt-skill          — manual del usuario para redactar prompts profesionales
-                          siguiendo el patron RACEO.
+- tests-skill                   - convenciones para generar tests unitarios.
+- integration-testing-skill     - tests de integracion con Supertest, MSW,
+                                  Testcontainers, Pact (NUEVO v4.5).
+- legacy-testing-skill          - characterization tests para legacy.
+- database-skill                - diseno y auditoria de BD.
+- frontend-skill                - diseno y auditoria de frontend.
+- visual-testing-skill          - tests UI + axe + Playwright + visual diff.
+- bdd-skill                     - Gherkin, herramientas 2026 (playwright-bdd,
+                                  @cucumber/cucumber, Reqnroll, Karate DSL),
+                                  Three Amigos, anti-patrones (NUEVO v4.5).
+- ai-testing-skill              - testing asistido por IA (Playwright MCP/CLI,
+                                  prompting, gates, GDPR + EU AI Act).
+                                  NUEVO v4.5.
+- prompt-skill                  - manual del usuario para redactar prompts
+                                  profesionales siguiendo el patron RACEO.
 
 Puedes pasar contexto despues del comando. Ejemplo:
   /nueva quiero anadir exportacion a PDF en el modulo de prompts
@@ -72,6 +88,7 @@ Puedes pasar contexto despues del comando. Ejemplo:
   /cuestionar audita los tests del modulo de validacion
   /revisar-bd auditoria completa del modelo y datos
   /revisar-frontend auditoria de accesibilidad y CWV
+  /bdd adoptar BDD para la feature de filtros de candidatos
 
 --------------------------------------------------------------------------------
  CICLO DE VIDA TIPICO
@@ -84,6 +101,7 @@ Sospechas drift         -> /sync
 Dudas de la calidad     -> /cuestionar
 Sospechas BD            -> /revisar-bd
 Sospechas frontend      -> /revisar-frontend
+Quieres adoptar BDD     -> /bdd
 Quieres forzar cierre   -> /cerrar
 
 Para proyectos que ya existen sin documentacion:
@@ -227,6 +245,30 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
   y altos. Documenta TODOs de validacion manual con lector de pantalla.
   NO modifica codigo. La IA detecta, el humano decide, el humano repara.
 
+/bdd   (NUEVO v4.5)
+  Adopta Behavior-Driven Development en el proyecto con 10 pasos:
+    1. Verificar aplicabilidad: stakeholders no tecnicos + disposicion
+       a Three Amigos. Si NO se cumple, NO procede.
+    2. Detectar stack y elegir herramienta segun regla 2026:
+       - JS/TS con UI            -> playwright-bdd.
+       - JS/TS sin UI (APIs)     -> @cucumber/cucumber (con scope).
+       - JS/TS con Cypress legacy-> @badeball/cypress-cucumber-preprocessor.
+       - .NET                    -> Reqnroll (SpecFlow discontinuado dic 2024).
+       - JVM + APIs              -> Karate DSL.
+    3. Instalar y configurar (carpetas features/ y features/steps/,
+       scripts test:bdd* en package.json).
+    4. Smoke test BDD que pase, luego borrarlo.
+    5. Ofrecer primera sesion Three Amigos asistida con Example Mapping
+       (Reglas - Ejemplos - Preguntas). Si >3 preguntas sin resolver,
+       la historia NO esta lista para desarrollarse.
+    6. Generar primer .feature siguiendo lenguaje del dominio (NO de la UI).
+    7. VALIDACION HUMANA del .feature antes de generar step definitions.
+    8. Generar step definitions reutilizando los existentes (no duplicar).
+    9. Registrar ADR + tickets en roadmap.
+    10. Cierre con On(task_complete).
+  Filosofia: BDD sin Three Amigos es Gherkin disfrazado. Three Amigos sin
+  BDD es una reunion mas. El valor aparece cuando las dos partes van juntas.
+
 --------------------------------------------------------------------------------
  REGLAS DE ORO
 --------------------------------------------------------------------------------
@@ -264,7 +306,7 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
 9. BD PRIMERO AUDITAR, LUEGO CAMBIAR
    En proyectos con BD, ejecutar /revisar-bd antes de cambios destructivos.
 
-10. FRONTEND PRIMERO MEDIR, LUEGO OPTIMIZAR (NUEVO v4.4)
+10. FRONTEND PRIMERO MEDIR, LUEGO OPTIMIZAR
     En proyectos con frontend, ejecutar /revisar-frontend antes de
     optimizaciones a ojo. WCAG 2.2 AA y Core Web Vitals son criterios
     objetivos. Datos reales (CrUX, axe, lector de pantalla) > intuicion.
@@ -277,10 +319,29 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
     El usuario consulta @.cursor/skills/prompt-skill/SKILL.md para
     redactar prompts complejos siguiendo el patron RACEO.
 
-13. CODIGO IA BAJO REVISION (NUEVO v4.4)
+13. CODIGO IA BAJO REVISION
     Outputs de v0/Lovable/Bolt/Figma Make pasan obligatoriamente por
     revision humana en Cursor/Windsurf/Claude Code antes de produccion.
     Tasa reportada: ~40-45% de vulnerabilidades en outputs sin revisar.
+
+14. BDD SIN THREE AMIGOS NO SE ADOPTA (NUEVO v4.5)
+    Gherkin sin conversacion previa con stakeholders es disfraz tecnico.
+    Si el equipo no esta dispuesto a las conversaciones, mejor NO adoptar
+    BDD. Registrar ADR "BDD descartado" y volver mas adelante.
+
+15. TESTS IA TRAZABLES (NUEVO v4.5)
+    Cada test generado por LLM tiene su *.prompt.md asociado, pasa code
+    review humano y NUNCA se mergea por auto-aprobacion. Queries
+    accesibles obligatorias (cero selectores fragiles).
+
+16. AI LITERACY OBLIGATORIA (NUEVO v4.5)
+    EU AI Act exige formacion en uso responsable de IA desde 2 febrero
+    2025. Equipo formado antes de generalizar uso de agentes IA.
+
+17. GDPR NO NEGOCIABLE (NUEVO v4.5)
+    NO enviar PII a LLMs externos sin DPA valido. Para datos sensibles,
+    usar LLMs locales (Ollama, vLLM) o proveedores con region europea
+    y DPA firmado. Multas EU AI Act: hasta 35M€ o 7% facturacion global.
 
 --------------------------------------------------------------------------------
  ESTRUCTURA DE ARCHIVOS
@@ -295,7 +356,7 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
 │   │                                  #   + Chrome DevTools + Playwright)
 │   ├── rules/
 │   │   └── architect-brain.mdc        # Rule global con alwaysApply: true
-│   └── skills/                        # 16 skills (12 commands + 4 aux + RACEO)
+│   └── skills/                        # 21 skills (13 commands + 8 aux)
 │       ├── inicio/SKILL.md
 │       ├── onboarding/SKILL.md
 │       ├── regularizar/SKILL.md
@@ -307,12 +368,16 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
 │       ├── cerrar/SKILL.md
 │       ├── cuestionar/SKILL.md
 │       ├── revisar-bd/SKILL.md
-│       ├── revisar-frontend/SKILL.md       # NUEVO v4.4
+│       ├── revisar-frontend/SKILL.md       # v4.4
+│       ├── bdd/SKILL.md                    # NUEVO v4.5
 │       ├── tests-skill/SKILL.md            # auto-invocable
 │       ├── legacy-testing-skill/SKILL.md   # auto-invocable
 │       ├── database-skill/SKILL.md         # auto-invocable
-│       ├── frontend-skill/SKILL.md         # auto-invocable, NUEVO v4.4
-│       ├── visual-testing-skill/SKILL.md   # auto-invocable, NUEVO v4.4
+│       ├── frontend-skill/SKILL.md         # auto-invocable, v4.4
+│       ├── visual-testing-skill/SKILL.md   # auto-invocable, v4.4
+│       ├── bdd-skill/SKILL.md              # auto-invocable, NUEVO v4.5
+│       ├── integration-testing-skill/SKILL.md # auto-invocable, NUEVO v4.5
+│       ├── ai-testing-skill/SKILL.md       # auto-invocable, NUEVO v4.5
 │       └── prompt-skill/SKILL.md           # auto-invocable, manual usuario
 ├── docs/                              # SSOT - Single Source of Truth
 │   ├── prd.md
@@ -332,7 +397,8 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
 --------------------------------------------------------------------------------
 Si en algun momento Cursor ignora el sistema (escribe codigo sin actualizar
 docs, cierra una tarea sin checklist, modifica BD/frontend sin auditar antes,
-etc.), usa este recordatorio:
+adopta BDD sin Three Amigos, mergea tests IA sin *.prompt.md, etc.), usa este
+recordatorio:
 
   "Sigue el protocolo de .cursor/rules/architect-brain.mdc: consulta
    blueprints, testing-strategy, database-strategy, frontend-strategy y

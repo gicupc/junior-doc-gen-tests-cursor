@@ -5,6 +5,29 @@
 
 ---
 
+## Pirámide de tests del proyecto
+
+Este proyecto sigue la siguiente distribución de niveles de testing. Cada nivel cubre preguntas diferentes y tiene su skill asociada en `.cursor/skills/`.
+
+| Nivel | Pregunta que responde | Skill | Cobertura objetivo |
+|---|---|---|---|
+| **Unit** | ¿Esta función/hook/clase se comporta correctamente con estos datos? | `tests-skill` | Toda la lógica crítica |
+| **Integración** | ¿Las piezas reales colaboran correctamente (API + BD + servicios)? | `integration-testing-skill` | Endpoints HTTP, flujos servicio-repositorio, componentes con fetch real |
+| **E2E + visual + a11y** | ¿El sistema completo funciona como un usuario lo espera? | `visual-testing-skill` | Flujos críticos del usuario (login, checkout, alta) |
+| **BDD / Aceptación** *(opcional)* | ¿El comportamiento cumple los criterios acordados con negocio? | `bdd-skill` | Solo features acordadas vía Three Amigos |
+| **Legacy / Characterization** *(condicional)* | ¿Qué hace HOY este código legacy antes de tocarlo? | `legacy-testing-skill` | Solo código legacy sospechoso |
+
+*Pirámide flexible 2026*: la pirámide clásica de Mike Cohn (muchas unit, pocas E2E) sigue siendo la guía, pero con Playwright + paralelización el "Testing Trophy" de Kent C. Dodds (énfasis en integración) es alternativa válida. La decisión elegida para este proyecto se documenta como ADR.
+
+*Marcar las casillas:*
+- [ ] Unit (obligatorio)
+- [ ] Integración (recomendado si hay APIs o BD)
+- [ ] E2E + visual + a11y (recomendado si hay frontend crítico)
+- [ ] BDD / Aceptación (opcional, solo si hay stakeholders no técnicos)
+- [ ] Legacy / Characterization (solo si aplica)
+
+---
+
 ## Decisiones
 
 ### Framework elegido
@@ -122,3 +145,74 @@ Recordar instalar `phpstan/phpstan-phpunit` para evitar falsos positivos del lin
 
 Ejemplo:
 - `Migración de esquema inicial de BD` — no testeable unitariamente, verificación manual en entorno de staging.
+
+---
+
+## BDD (opcional)
+
+*Rellenar solo si el proyecto adopta BDD vía `/bdd`.*
+
+### Herramienta elegida
+*Ejemplo: playwright-bdd 8.x sobre @playwright/test 1.59*
+
+### Estructura de carpetas BDD
+```
+features/
+├── *.feature           # Especificaciones Gherkin
+└── steps/
+    └── *.steps.ts      # Step definitions
+```
+
+### Política de adopción
+- [ ] Three Amigos obligatorios antes de codificar features con tag `@critical`.
+- [ ] Lenguaje del dominio acordado y documentado.
+- [ ] Anti-patrones de Gherkin generado por IA conocidos por el equipo (ver `bdd-skill`).
+
+### Tags semánticos en uso
+*Ejemplo:*
+- `@smoke` — suite rápida que corre en cada PR.
+- `@regression` — suite completa que corre en main.
+- `@critical` — flujos críticos del negocio; requieren Three Amigos.
+
+---
+
+## Testing con IA
+
+*Rellenar si el proyecto usa herramientas de IA en su flujo de testing.*
+
+### Agentes y herramientas en uso
+*Ejemplo:*
+- **Generación de tests E2E**: Cursor Agent con Playwright MCP (plantilla activada en `.cursor/mcp.json`).
+- **Generación de unit tests**: Cursor con prompts en `prompts/templates/`.
+- **Visual regression**: Argos CI.
+- **Self-healing**: Healenium (selector-level, ML clásico).
+
+### Trazabilidad de prompts
+- [ ] Cada test generado por IA tiene su `*.prompt.md` asociado.
+- [ ] Los prompts se versionan en Git junto al test.
+- [ ] PR de tests generados por IA requiere revisor humano explícito.
+
+### Gates en CI
+- [ ] Tests con `retry > 0` en main 3 ejecuciones seguidas fallan el pipeline.
+- [ ] Script CI verifica que cada `*.spec.ts` generado tiene `*.prompt.md`.
+- [ ] Linter rechaza selectores frágiles (`#mui-*`, `.css-1*`).
+
+Documentación completa en `.cursor/skills/ai-testing-skill/SKILL.md`.
+
+---
+
+## Cumplimiento normativo (si aplica)
+
+*Rellenar solo si el proyecto procesa datos personales o cae bajo EU AI Act como sistema de alto riesgo.*
+
+### GDPR / RGPD
+- [ ] Si se envían datos a LLMs externos para generar/mantener tests: existe DPA con el proveedor.
+- [ ] Fixtures de test NO contienen PII real (usar `@faker-js/faker` con locale del proyecto).
+- [ ] Logs de tests con datos sensibles se redactan antes de almacenarse.
+
+### EU AI Act
+- [ ] Equipo formado en AI literacy (obligatorio desde 2 febrero 2025 si usa IA).
+- [ ] Si la app es de **alto riesgo** (Annex III: empleo, crédito, educación, salud, justicia): los tests forman parte del expediente de calidad y se archivan junto a los prompts y revisiones.
+- [ ] Decisión sobre proveedor de LLM y región registrada en `docs/decisions-log.md`.
+
+Referencia: `.cursor/skills/ai-testing-skill/SKILL.md` sección "Riesgos y límites".

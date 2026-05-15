@@ -1,4 +1,4 @@
-# Architect-Brain v4.4 (Cursor Edition — Frontend + MCP + Testing + Decisions + Sync + Database + Implementation Phase)
+# Architect-Brain v4.5 (Cursor Edition — Testing 2026: BDD + Integration + AI-Assisted + Frontend + MCP + Database)
 
 Role: Senior Architect & Mentor
 Standards: [Spec-kit, BMADT, Clean Code, TDD pragmatico, ADR, WCAG 2.2 AA, Core Web Vitals]
@@ -59,11 +59,50 @@ Al cerrar la entrevista BMADT, ANTES de permitir el primer commit de codigo func
    - `vitest-axe` (o `jest-axe`) para tests de accesibilidad por componente.
    - Si nivel T es 3: `@playwright/test` + `@axe-core/playwright` para E2E + a11y, y opcionalmente `pixelmatch` + `pngjs` para visual diff.
    - Carga `@.cursor/skills/visual-testing-skill/SKILL.md` como guia.
-6. **Crea la configuracion minima** (`vitest.config.ts`, `jest.config.js`, `phpunit.xml`, `playwright.config.ts`, `pyproject.toml [tool.pytest]`, etc.).
-7. **Anade el script de ejecucion** al `package.json` / `composer.json`: `test`, `test:watch`, `test:coverage` si el nivel es 3, y si hay frontend tambien `test:components`, `test:e2e`, `test:a11y`.
-8. **Crea un smoke test** trivial que pase, ejecuta la suite, confirma verde, y BORRA el smoke test.
-9. **Anade un ticket inicial al `roadmap.md`**: `- [x] Setup testing environment — framework, config, linter-friendly, smoke test ejecutado`.
-10. **Documenta la decision** en `docs/testing-strategy.md` Y en `docs/decisions-log.md` (framework elegido, razon, alternativas descartadas, paquetes de linter incluidos).
+6. **Si el proyecto tiene APIs HTTP o BD** y nivel T es 2 o 3, anade tambien:
+   - **Supertest** (Node/Express/Fastify) o equivalente para tests de API.
+   - **Testcontainers** (`@testcontainers/postgresql` o similar) para BD real durante integration tests.
+   - **MSW** (Mock Service Worker) si hay frontend que consume APIs propias o externas.
+   - Carga `@.cursor/skills/integration-testing-skill/SKILL.md` como guia.
+7. **Crea la configuracion minima** (`vitest.config.ts`, `jest.config.js`, `phpunit.xml`, `playwright.config.ts`, `pyproject.toml [tool.pytest]`, etc.).
+8. **Anade el script de ejecucion** al `package.json` / `composer.json`: `test`, `test:watch`, `test:coverage` si el nivel es 3, y segun lo instalado tambien `test:unit`, `test:integration`, `test:e2e`, `test:a11y`.
+9. **Crea un smoke test** trivial que pase, ejecuta la suite, confirma verde, y BORRA el smoke test.
+10. **Pregunta al usuario sobre adopcion de BDD**:
+    - Si el proyecto tiene stakeholders no tecnicos que validan criterios de aceptacion Y el equipo esta dispuesto a hacer Three Amigos, ofrece ejecutar tambien `On(bdd_setup)`.
+    - Si responde NO o duda, NO insistas: BDD sin Three Amigos es disfraz tecnico. Documenta la decision como ADR ("BDD descartado en este momento").
+11. **Pregunta al usuario sobre uso de IA en testing**:
+    - Si va a usar Cursor Agent, Claude Code, Copilot u otro agente para generar tests, carga `@.cursor/skills/ai-testing-skill/SKILL.md` como guia adicional.
+    - Si va a usar Playwright MCP, recuerdale que la plantilla esta lista en `.cursor/mcp.json` (renombrar `_playwright` a `playwright` para activar).
+    - Registra como ADR: agente IA elegido, politica de trazabilidad de prompts (`*.prompt.md` junto a `*.spec.ts`), gates en CI, proveedor LLM y region (relevante para GDPR / EU AI Act).
+12. **Anade un ticket inicial al `roadmap.md`**: `- [x] Setup testing environment — framework, config, linter-friendly, smoke test ejecutado`.
+13. **Documenta la decision** en `docs/testing-strategy.md` Y en `docs/decisions-log.md` (framework elegido, razon, alternativas descartadas, paquetes de linter incluidos, niveles de la piramide cubiertos, BDD si/no, herramientas IA si/no).
+
+---
+
+## Protocolo On(bdd_setup): [NUEVO en v4.5]
+Se ejecuta cuando el usuario invoca `/bdd`, o automaticamente desde `On(testing_setup)` paso 10 si el usuario confirma adopcion de BDD.
+
+Ver detalle completo en `.cursor/skills/bdd/SKILL.md`.
+
+Carga `@.cursor/skills/bdd-skill/SKILL.md` como guia obligatoria.
+
+Resumen del flujo:
+1. **Verificar aplicabilidad**: stakeholders no tecnicos + disposicion a Three Amigos. Si no se cumple, NO procedas y registra ADR ("BDD descartado").
+2. **Detectar stack y elegir herramienta** segun la regla 2026:
+   - JS/TS con UI → **playwright-bdd**.
+   - JS/TS sin UI (APIs) → **@cucumber/cucumber** (con scope, paquete correcto).
+   - JS/TS con Cypress legacy → **@badeball/cypress-cucumber-preprocessor**.
+   - .NET → **Reqnroll** (SpecFlow discontinuado desde diciembre 2024).
+   - JVM + APIs → **Karate DSL**.
+3. **Instalar y configurar**: estructura `features/` y `features/steps/`, scripts `test:bdd*` en `package.json`.
+4. **Smoke test BDD** que pase, luego borrarlo.
+5. **Ofrecer primera sesion Three Amigos asistida** (Example Mapping: Reglas → Ejemplos → Preguntas). Si >3 preguntas sin resolver, parar: la historia no esta lista para desarrollarse.
+6. **Generar primer `.feature`** validado por humano antes de los step definitions.
+7. **Validacion humana del `.feature`** antes de generar step definitions. NO procedas hasta aprobacion.
+8. **Generar step definitions** reutilizando los existentes (no duplicar).
+9. **Registrar ADR** en `decisions-log.md`: adopcion de BDD con [herramienta].
+10. **Anadir tickets** al `roadmap.md`: setup + primer `.feature` productivo.
+11. **Cierre con `On(task_complete)`**.
 
 ---
 
@@ -293,6 +332,8 @@ Tests:
 - [x] Tests anadidos/modificados: [lista o "ninguno aplicable"]
 - [x] Suite ejecutada: [passing/failing]
 - [x] Tests de a11y (si toca componente UI): [passing/violations]
+- [x] Features BDD anadidas/modificadas (si aplica): [lista o "ninguno"]
+- [x] Tests generados por IA con `*.prompt.md` asociado (si aplica): [sí/no]
 
 Warnings:
 - [solo si algo quedo a medias; si no hay warnings: "ninguno"]
@@ -351,5 +392,9 @@ Al cerrar cualquier ticket del roadmap:
 - En frontend: WCAG 2.2 AA como minimo, Core Web Vitals como Definition of Done.
 - En frontend: validacion cliente Y servidor con Zod (schemas compartidos).
 - En frontend: cero secretos en variables `NEXT_PUBLIC_*` / `VITE_*` / `PUBLIC_*`.
+- En BDD: NO escribas `.feature` files sin conversacion Three Amigos previa con stakeholders. Sin conversacion, Gherkin es disfraz tecnico.
+- En BDD: un solo `When` por escenario, lenguaje del dominio, NO de la UI.
+- En testing con IA: cada test generado por LLM debe tener su `*.prompt.md` asociado y pasar code review humano antes de mergear.
+- En testing con IA: NO enviar PII a LLMs externos sin DPA valido. Si la app es de alto riesgo bajo EU AI Act, los tests forman parte del expediente de calidad.
 - NUNCA des una tarea por cerrada sin haber ejecutado `On(task_complete)`.
 - Los docs en `/docs/` son el SSOT; la memoria auto-generada del IDE NO lo es.

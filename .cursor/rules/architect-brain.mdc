@@ -26,6 +26,8 @@ Antes de modificar, anadir o reparar codigo, DEBES preguntar:
 4. ¿Esta peticion implica una decision no trivial que debo registrar en `docs/decisions-log.md`?
 5. ¿Esta peticion toca la base de datos? Si es si, ¿debo actualizar `docs/database-strategy.md`?
 6. ¿Esta peticion toca el frontend (componentes, paginas, estilos, a11y)? Si es si, ¿debo actualizar `docs/frontend-strategy.md`?
+7. ¿Esta peticion implica criterios de aceptacion validables por stakeholders no tecnicos? Si es si, ¿procede adoptar o ampliar BDD (`/bdd`) y registrar la decision?
+8. ¿Voy a usar agentes IA (Cursor Agent, Claude Code, Copilot, Playwright MCP) para generar o mantener tests? Si es si, recuerda la politica de trazabilidad: cada test generado con `*.prompt.md` asociado, code review obligatoria, y consideraciones GDPR / EU AI Act si la app es de alto riesgo.
 
 No tocare el codigo hasta que confirmes la sincronizacion documental."
 
@@ -119,6 +121,7 @@ Reconoce y ejecuta estos comandos cuando aparezcan en la conversacion:
 | "/cuestionar" / "audita la calidad de la suite" | `cuestionar` |
 | "/revisar-bd" / "audita la base de datos" | `revisar-bd` |
 | "/revisar-frontend" / "audita la UI" / "¿mi frontend cumple a11y/CWV?" | `revisar-frontend` |
+| "/bdd" / "adoptar BDD" / "montar Gherkin" / "escenarios de aceptacion" | `bdd` |
 | "/onboarding" / "dame un mapa rapido" / "no conozco este codigo" | `onboarding` |
 | "implementa el plan" / "vamos al codigo" / "ejecuta el plan paso a paso" | `On(implementation_phase)` (disciplina de paradas mid-task) |
 
@@ -128,16 +131,50 @@ Reconoce y ejecuta estos comandos cuando aparezcan en la conversacion:
 - Todo proyecto nuevo arranca con entorno de tests configurado ANTES del primer codigo funcional.
 - Un ticket NO se marca `[x]` en `roadmap.md` hasta que sus tests esten en verde.
 - Los tests viven en la carpeta convencional del stack — documentada en `docs/testing-strategy.md`.
+- **Piramide de tests del proyecto** documentada en `docs/testing-strategy.md` con 5 niveles posibles:
+  - **Unit** (obligatorio en logica critica) — `@.cursor/skills/tests-skill/SKILL.md`.
+  - **Integracion** (recomendado si hay APIs o BD) — `@.cursor/skills/integration-testing-skill/SKILL.md`.
+  - **E2E + visual + a11y** (recomendado si hay frontend) — `@.cursor/skills/visual-testing-skill/SKILL.md`.
+  - **BDD / Aceptacion** (opcional, solo con Three Amigos) — `@.cursor/skills/bdd-skill/SKILL.md`.
+  - **Legacy / Characterization** (condicional) — `@.cursor/skills/legacy-testing-skill/SKILL.md`.
 - Logica critica (validadores, servicios, reglas de negocio, calculos) tiene tests obligatorios.
 - UI trivial, getters/setters, renders simples y fontaneria quedan fuera del scope de tests UNITARIOS, pero los componentes con interaccion deben tener tests de COMPONENTE con axe.
 - Las dependencias externas (BD, APIs, sistema de archivos) se mockean en tests unitarios.
 - Si el proyecto tiene BD, los tests de integracion usan **Testcontainers** o equivalente.
+- Si el proyecto tiene APIs HTTP, los tests de integracion usan **Supertest** + **MSW** (mocks reutilizables entre integration y E2E).
 - Si el proyecto tiene frontend con nivel T 2 o 3, los componentes con interaccion tienen tests de componente con `vitest-axe` y los flujos criticos tienen tests E2E con `@playwright/test` + `@axe-core/playwright`.
-- Carga `@.cursor/skills/tests-skill/SKILL.md` cuando trabajes con tests.
+- Recomendacion 2026: en proyectos NUEVOS JS/TS con Vite / Next.js 15+ / React 19, **Vitest** preferido sobre Jest (4-10x mas rapido en watch mode, ESM y TS nativos).
+- Carga `@.cursor/skills/tests-skill/SKILL.md` cuando trabajes con tests unitarios.
+- Carga `@.cursor/skills/integration-testing-skill/SKILL.md` cuando trabajes con tests de integracion (Supertest, MSW, Testcontainers, Pact).
 - Carga `@.cursor/skills/legacy-testing-skill/SKILL.md` cuando generes tests sobre legacy.
 - Carga `@.cursor/skills/database-skill/SKILL.md` cuando generes tests de calidad de datos.
 - Carga `@.cursor/skills/visual-testing-skill/SKILL.md` cuando setupees o amplies tests de UI/a11y.
 - **Cobertura no es calidad.** El comando `/cuestionar` audita la calidad real con mutation thinking.
+
+---
+
+## BDD (opcional, solo con Three Amigos)
+- BDD se adopta vía `/bdd` y solo si: (a) hay stakeholders no tecnicos que validan criterios, Y (b) el equipo esta dispuesto a hacer Three Amigos.
+- Sin conversacion Three Amigos previa, NO escribas `.feature` files. Gherkin sin conversacion es disfraz tecnico.
+- Un solo `When` por escenario. Lenguaje del dominio, NO de la UI.
+- Datos realistas pero minimos. Usar `Scenario Outline` cuando los casos comparten estructura.
+- Herramientas 2026 segun stack: **playwright-bdd** (JS/TS con UI), **@cucumber/cucumber** con scope (APIs sin UI), **@badeball/cypress-cucumber-preprocessor** (Cypress legacy), **Reqnroll** (.NET, sucesor de SpecFlow), **Karate DSL** (JVM + APIs).
+- Validacion humana del `.feature` ANTES de generar step definitions.
+- Carga `@.cursor/skills/bdd-skill/SKILL.md` cuando trabajes con BDD.
+
+---
+
+## TESTING CON IA (si aplica)
+- Cada test generado por LLM debe tener su `*.prompt.md` asociado y versionado en Git junto al test.
+- PR de tests generados por IA requiere revisor humano explicito. Cero auto-merge.
+- Queries accesibles obligatorias (`getByRole`, `getByLabel`, `getByTestId`). Cero selectores de clase, IDs autogenerados o XPath.
+- Tests con `retry > 0` en main 3 ejecuciones seguidas fallan el pipeline.
+- En Cursor, plantilla de **Playwright MCP** disponible en `.cursor/mcp.json` (bloque `_playwright`, renombrar para activar). Alternativa con menor coste en tokens: **Playwright CLI** para agente con filesystem.
+- IA tradicional (ML clasico) gana en self-healing selector-level, flakiness prediction, anomaly detection. LLMs ganan en generacion de tests desde user-story, debugging, Gherkin.
+- Antes de enviar datos a LLMs externos: verificar DPA con el proveedor (GDPR). NO enviar PII sin garantias legales.
+- Si la app es de **alto riesgo** bajo EU AI Act (Annex III: empleo, credito, educacion, salud, justicia), los tests forman parte del expediente de calidad y se archivan junto a los prompts y revisiones.
+- AI literacy obligatoria desde 2 febrero 2025 para empresas que usan IA.
+- Carga `@.cursor/skills/ai-testing-skill/SKILL.md` cuando uses agentes IA para tests.
 
 ---
 
@@ -196,3 +233,7 @@ Reconoce y ejecuta estos comandos cuando aparezcan en la conversacion:
 - **Prompts profesionales:** El usuario consulta `@.cursor/skills/prompt-skill/SKILL.md` para redactar prompts complejos siguiendo el patron RACEO.
 - **MCP servers como capacidades:** los MCP servers (Figma Dev Mode, shadcn, Chrome DevTools, Playwright, Postgres) extienden lo que el agente puede hacer. Activarlos solo cuando aporten valor al escenario, documentarlos como ADR.
 - **Codigo IA bajo revision:** outputs de v0/Lovable/Bolt/Figma Make pasan obligatoriamente por revision humana en Cursor/Claude Code/Windsurf antes de produccion. ~40-45% tasa de vulnerabilidades en outputs sin revisar.
+- **BDD sin Three Amigos NO se adopta:** Gherkin sin conversacion previa es disfraz tecnico. Si el equipo no esta dispuesto a las conversaciones, mejor NO adoptar BDD.
+- **Tests IA trazables:** Cada test generado por LLM tiene su `*.prompt.md` asociado, pasa code review humano y NUNCA se mergea por auto-aprobacion.
+- **AI literacy obligatoria:** EU AI Act exige formacion en uso responsable de IA desde febrero 2025. Equipo formado antes de generalizar uso de agentes IA en testing.
+- **GDPR no negociable:** NO enviar PII a LLMs externos sin DPA valido. Para datos sensibles, usar LLMs locales (Ollama, vLLM) o proveedores con region europea y DPA firmado.
