@@ -1,16 +1,22 @@
 ================================================================================
- MANUAL OPERATIVO: ARCHITECT-BRAIN v4.5 (Cursor Edition)
- (Testing 2026: BDD + Integration + AI-Assisted + Frontend + MCP + Database)
+ MANUAL OPERATIVO: ARCHITECT-BRAIN v4.6 (Cursor Edition)
+ (Supply Chain Security + Testing 2026 BDD + Integration + AI-Assisted +
+  Frontend + MCP + Database)
 ================================================================================
 
 Sistema de scaffolding para Cursor que mantiene documentacion, codigo, tests,
-decisiones, base de datos y frontend (accesibilidad + Core Web Vitals +
-seguridad) sincronizados a lo largo del ciclo de vida del proyecto.
+decisiones, base de datos, frontend (accesibilidad + Core Web Vitals +
+seguridad) y cadena de suministro (npm + GitHub Actions + OIDC publishing)
+sincronizados a lo largo del ciclo de vida del proyecto.
 
-v4.5 amplia el stack de testing con tres capas nuevas como ciudadanos de
-primera clase: BDD opt-in con Three Amigos, integracion con Supertest/MSW/
-Testcontainers, y testing asistido por IA con Playwright MCP/CLI + trazabilidad
-de prompts + gates GDPR / EU AI Act.
+v4.5 amplio el stack de testing con tres capas nuevas: BDD opt-in con Three
+Amigos, integracion con Supertest/MSW/Testcontainers, y testing asistido por
+IA con Playwright MCP/CLI + trazabilidad de prompts + gates GDPR / EU AI Act.
+
+v4.6 anade defensa de cadena de suministro en 4 capas (dependency resolution
++ install-time execution + CI execution + publish path) tras el ataque a
+TanStack del 11 mayo 2026, que demostro que el provenance SLSA valido NO es
+garantia (84 versiones maliciosas en 42 paquetes con Build Level 3 valido).
 
 Esta es la version Cursor del sistema. Existe tambien la version Windsurf:
 https://github.com/gicupc/junior-doc-gen-tests
@@ -30,7 +36,7 @@ asi que las reglas globales del sistema estan presentes en cada chat sin que
 tengas que invocarlas.
 
 --------------------------------------------------------------------------------
- SLASH COMMANDS DISPONIBLES (13 skills con disable-model-invocation)
+ SLASH COMMANDS DISPONIBLES (14 skills con disable-model-invocation)
 --------------------------------------------------------------------------------
 Las skills viven en .cursor/skills/<nombre>/SKILL.md. Las que tienen
 disable-model-invocation: true se comportan como slash commands clasicos
@@ -41,17 +47,19 @@ se cargan automaticamente cuando la IA detecta que aplican.
 | Comando              | Cuando usarlo                                          |
 +----------------------+--------------------------------------------------------+
 | /inicio              | Proyecto vacio. Entrevista BMADT + docs + setup tests  |
-|                      | + setup BD si aplica + setup FRONTEND si aplica.       |
+|                      | + setup BD si aplica + setup FRONTEND si aplica +      |
+|                      | setup SUPPLY CHAIN si usa npm registry.                |
 | /onboarding          | Codebase ajeno. Mapa rapido en 6 secciones, sin docs.  |
 | /regularizar         | Proyecto con codigo pero sin docs. Menu [1][2][3][4].  |
-|                      | La opcion [4] incluye auditoria BD y frontend.         |
+|                      | La opcion [4] incluye auditoria BD, frontend y supply  |
+|                      | chain.                                                 |
 | /hoy                 | "Que hacemos hoy." Briefing con sugerencia para el dia.|
 | /nueva               | Anadir funcionalidad. Interrupcion de seguridad antes  |
 |                      | de tocar codigo.                                       |
 | /reparar             | Corregir un bug. Si no esta cubierto, primero el test  |
 |                      | que lo reproduce, luego el fix.                        |
 | /decidir             | Cambiar una decision pasada (stack, testing, BD,       |
-|                      | frontend). Propaga sin perder historico.               |
+|                      | frontend, supply chain). Propaga sin perder historico. |
 | /sync                | Detectar drift entre codigo y documentacion.           |
 | /cerrar              | Forzar checklist de sincronizacion.                    |
 | /cuestionar          | Auditar la CALIDAD real de la suite de tests con       |
@@ -62,23 +70,31 @@ se cargan automaticamente cuando la IA detecta que aplican.
 |                      | accesibilidad WCAG 2.2 AA. Solo reporta.               |
 | /bdd                 | Adoptar Behavior-Driven Development (verifica          |
 |                      | aplicabilidad, instala herramienta segun stack 2026,   |
-|                      | primera sesion Three Amigos asistida). NUEVO v4.5.     |
+|                      | primera sesion Three Amigos asistida). v4.5.           |
+| /revisar-supply-chain| Auditar cadena de suministro: dependency resolution,   |
+|                      | install-time execution, CI execution (GitHub Actions), |
+|                      | publish path (OIDC). Cross-referencia con incidentes   |
+|                      | publicos (TanStack, Shai-Hulud, axios, Trivy). Solo    |
+|                      | reporta. NUEVO v4.6.                                   |
 +----------------------+--------------------------------------------------------+
 
 Skills auxiliares (auto-invocables, sin slash):
 - tests-skill                   - convenciones para generar tests unitarios.
 - integration-testing-skill     - tests de integracion con Supertest, MSW,
-                                  Testcontainers, Pact (NUEVO v4.5).
+                                  Testcontainers, Pact (v4.5).
 - legacy-testing-skill          - characterization tests para legacy.
 - database-skill                - diseno y auditoria de BD.
 - frontend-skill                - diseno y auditoria de frontend.
 - visual-testing-skill          - tests UI + axe + Playwright + visual diff.
 - bdd-skill                     - Gherkin, herramientas 2026 (playwright-bdd,
                                   @cucumber/cucumber, Reqnroll, Karate DSL),
-                                  Three Amigos, anti-patrones (NUEVO v4.5).
+                                  Three Amigos, anti-patrones (v4.5).
 - ai-testing-skill              - testing asistido por IA (Playwright MCP/CLI,
-                                  prompting, gates, GDPR + EU AI Act).
-                                  NUEVO v4.5.
+                                  prompting, gates, GDPR + EU AI Act). v4.5.
+- supply-chain-skill            - defensas en 4 capas (minimumReleaseAge,
+                                  allowBuilds, GitHub Actions hardening, OIDC
+                                  pinning), respuesta a incidente con orden
+                                  critico (TanStack, Shai-Hulud). NUEVO v4.6.
 - prompt-skill                  - manual del usuario para redactar prompts
                                   profesionales siguiendo el patron RACEO.
 
@@ -89,6 +105,7 @@ Puedes pasar contexto despues del comando. Ejemplo:
   /revisar-bd auditoria completa del modelo y datos
   /revisar-frontend auditoria de accesibilidad y CWV
   /bdd adoptar BDD para la feature de filtros de candidatos
+  /revisar-supply-chain audita las dependencias de mi proyecto Next.js
 
 --------------------------------------------------------------------------------
  CICLO DE VIDA TIPICO
@@ -269,6 +286,52 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
   Filosofia: BDD sin Three Amigos es Gherkin disfrazado. Three Amigos sin
   BDD es una reunion mas. El valor aparece cuando las dos partes van juntas.
 
+/revisar-supply-chain   (NUEVO v4.6)
+  Audita la cadena de suministro de un proyecto JS/TS. Solo aplica si
+  existe package.json. Las 4 capas de defensa:
+    CAPA 1 - DEPENDENCY RESOLUTION:
+      - Lockfile commiteado.
+      - minimumReleaseAge activo (pnpm: 1440 min, npm: 2d, yarn: 3d, bun: 3d).
+      - blockExoticSubdeps activo (pnpm 11).
+      - Direct dependencies sin URLs exoticas (github:, tarball URLs).
+      - trustPolicy: no-downgrade (pnpm).
+    CAPA 2 - INSTALL-TIME EXECUTION:
+      - strictDepBuilds activo (pnpm).
+      - allowBuilds definido con paquetes legitimos.
+      - ignore-scripts (npm clasico) si aplica.
+      - Paquetes con lifecycle scripts revisados.
+    CAPA 3 - CI EXECUTION (GitHub Actions):
+      - NO pull_request_target con checkout del fork ("Pwn Request").
+      - Cache no compartida entre PR y release.
+      - Acciones pineadas a SHA (no tag mutable).
+      - permissions: {} explicito.
+      - Secrets no accesibles desde workflows de PR.
+    CAPA 4 - PUBLISH PATH (OIDC):
+      - OIDC en lugar de PAT.
+      - Trusted publisher pineado a workflow + branch.
+      - Branch protection en main con block force pushes.
+      - 2FA activado en cuentas con permiso de publicacion.
+      - Lockfile no expone _authToken ni _password.
+  Cross-referencia el lockfile con bases publicas de paquetes
+  comprometidos: TanStack mayo 2026 (GHSA-g7cv-rxg3-hmpx), Shai-Hulud
+  (sep 2025 + ondas), axios 1.14.1/0.30.4, Trivy con tags repointed.
+  Genera docs/supply-chain-audit.md con hallazgos por severidad. Crea
+  tickets en roadmap.md por hallazgos criticos y altos. Comparte con
+  docs/investigacion_seguridad.md. NO modifica .npmrc, pnpm-workspace,
+  workflows ni dependencias. La IA detecta, el humano decide, el humano
+  arregla.
+
+  RESPUESTA A INCIDENTE - ORDEN CRITICO si detecta paquete comprometido:
+    1. NO revocar token de GitHub todavia (vector rm -rf ~/ al revocar).
+    2. Limpiar daemon de persistencia (gh-token-monitor en LaunchAgents/
+       systemd/ Task Scheduler).
+    3. Buscar payloads residuales (router_runtime.js, setup.mjs,
+       tanstack_runner.js) en ~/.claude, ~/.vscode.
+    4. Aislar la maquina de la red.
+    5. Rotar TODAS las credenciales accesibles desde la maquina.
+    6. Auditar versiones publicadas por la cuenta (worm self-propagation).
+    7. Documentar como ADR de incidente.
+
 --------------------------------------------------------------------------------
  REGLAS DE ORO
 --------------------------------------------------------------------------------
@@ -343,6 +406,29 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
     usar LLMs locales (Ollama, vLLM) o proveedores con region europea
     y DPA firmado. Multas EU AI Act: hasta 35M€ o 7% facturacion global.
 
+18. SUPPLY CHAIN EN 4 CAPAS (NUEVO v4.6)
+    minimumReleaseAge (cooldown 1+ dia) + allowBuilds (deny by default) +
+    GitHub Actions hardening (NO pull_request_target con checkout de fork,
+    acciones pineadas a SHA) + OIDC trusted publishing pineado a
+    workflow+branch. Provenance SLSA valido NO es garantia: el ataque
+    TanStack del 11 mayo 2026 publico 84 versiones maliciosas con SLSA
+    Build Level 3 provenance VALIDO desde el workflow legitimo. Defender
+    en 4 capas, no en 1.
+
+19. LIFECYCLE SCRIPTS DENEGADOS POR DEFECTO (NUEVO v4.6)
+    allowBuilds (pnpm) o ignore-scripts (npm) reducen el vector clasico
+    de worms npm: postinstall que descarga payload y roba credenciales
+    (axios marzo 2026, Shai-Hulud, Trivy). Aprobaciones explicitas
+    documentadas con justificacion (binario nativo legitimo) son lo unico
+    que se permite ejecutar.
+
+20. RESPUESTA A INCIDENTE CON ORDEN CRITICO (NUEVO v4.6)
+    Si se detecta paquete comprometido instalado, NO revocar token de
+    GitHub antes de limpiar daemon de persistencia. Algunos payloads
+    (Mini Shai-Hulud, TanStack) ejecutan rm -rf ~/ cuando detectan
+    revocacion. Orden correcto: limpiar persistencia -> aislar red ->
+    rotar credenciales -> auditar blast radius -> documentar ADR.
+
 --------------------------------------------------------------------------------
  ESTRUCTURA DE ARCHIVOS
 --------------------------------------------------------------------------------
@@ -356,7 +442,7 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
 │   │                                  #   + Chrome DevTools + Playwright)
 │   ├── rules/
 │   │   └── architect-brain.mdc        # Rule global con alwaysApply: true
-│   └── skills/                        # 21 skills (13 commands + 8 aux)
+│   └── skills/                        # 23 skills (14 commands + 9 aux)
 │       ├── inicio/SKILL.md
 │       ├── onboarding/SKILL.md
 │       ├── regularizar/SKILL.md
@@ -369,15 +455,17 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
 │       ├── cuestionar/SKILL.md
 │       ├── revisar-bd/SKILL.md
 │       ├── revisar-frontend/SKILL.md       # v4.4
-│       ├── bdd/SKILL.md                    # NUEVO v4.5
+│       ├── bdd/SKILL.md                    # v4.5
+│       ├── revisar-supply-chain/SKILL.md   # NUEVO v4.6
 │       ├── tests-skill/SKILL.md            # auto-invocable
 │       ├── legacy-testing-skill/SKILL.md   # auto-invocable
 │       ├── database-skill/SKILL.md         # auto-invocable
 │       ├── frontend-skill/SKILL.md         # auto-invocable, v4.4
 │       ├── visual-testing-skill/SKILL.md   # auto-invocable, v4.4
-│       ├── bdd-skill/SKILL.md              # auto-invocable, NUEVO v4.5
-│       ├── integration-testing-skill/SKILL.md # auto-invocable, NUEVO v4.5
-│       ├── ai-testing-skill/SKILL.md       # auto-invocable, NUEVO v4.5
+│       ├── bdd-skill/SKILL.md              # auto-invocable, v4.5
+│       ├── integration-testing-skill/SKILL.md # auto-invocable, v4.5
+│       ├── ai-testing-skill/SKILL.md       # auto-invocable, v4.5
+│       ├── supply-chain-skill/SKILL.md     # auto-invocable, NUEVO v4.6
 │       └── prompt-skill/SKILL.md           # auto-invocable, manual usuario
 ├── docs/                              # SSOT - Single Source of Truth
 │   ├── prd.md
@@ -387,7 +475,8 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
 │   ├── roadmap.md
 │   ├── testing-strategy.md
 │   ├── database-strategy.md           # Si hay BD
-│   ├── frontend-strategy.md           # Si hay frontend (NUEVO v4.4)
+│   ├── frontend-strategy.md           # Si hay frontend (v4.4)
+│   ├── supply-chain-strategy.md       # Si usa npm registry (NUEVO v4.6)
 │   └── decisions-log.md               # ADRs (registro inmutable)
 └── prompts/
     └── architect-brain.md             # Cerebro completo del sistema
@@ -396,16 +485,18 @@ Para desarrollo local con datos de prueba, full-access es aceptable.
  PROTOCOLO DE DEFENSA SI LA IA SE DESVIA
 --------------------------------------------------------------------------------
 Si en algun momento Cursor ignora el sistema (escribe codigo sin actualizar
-docs, cierra una tarea sin checklist, modifica BD/frontend sin auditar antes,
-adopta BDD sin Three Amigos, mergea tests IA sin *.prompt.md, etc.), usa este
-recordatorio:
+docs, cierra una tarea sin checklist, modifica BD/frontend/supply-chain sin
+auditar antes, adopta BDD sin Three Amigos, mergea tests IA sin *.prompt.md,
+desactiva minimumReleaseAge sin ADR, etc.), usa este recordatorio:
 
   "Sigue el protocolo de .cursor/rules/architect-brain.mdc: consulta
-   blueprints, testing-strategy, database-strategy, frontend-strategy y
-   decisions-log, y cierra con checklist."
+   blueprints, testing-strategy, database-strategy, frontend-strategy,
+   supply-chain-strategy y decisions-log, y cierra con checklist."
 
 Si el problema persiste, invoca /cerrar para forzar el checklist del trabajo
 reciente, /sync para auditar el estado real vs documentado, /revisar-bd o
-/revisar-frontend para auditar BD o frontend si sospechas que se ha desviado.
+/revisar-frontend para auditar BD o frontend si sospechas que se ha desviado,
+/revisar-supply-chain si sospechas que las defensas de cadena de suministro
+estan rotas o instalaste algo dudoso.
 
 ================================================================================

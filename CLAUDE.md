@@ -1,6 +1,6 @@
 # Project Instructions for Claude Code
 
-Este proyecto usa el sistema **Architect-Brain v4.5** para garantizar calidad en codigo, documentacion, tests, base de datos y frontend.
+Este proyecto usa el sistema **Architect-Brain v4.6** para garantizar calidad en codigo, documentacion, tests, base de datos, frontend y cadena de suministro (supply chain).
 
 > **Nota:** Claude Code lee este archivo (`CLAUDE.md`); Cursor lee `.cursor/rules/architect-brain.mdc`. Este archivo apunta a las mismas fuentes de verdad que Cursor, para que el sistema funcione identico en ambos entornos. NO duplica contenido.
 
@@ -11,9 +11,9 @@ Este proyecto usa el sistema **Architect-Brain v4.5** para garantizar calidad en
 Cuando inicies sesion en este proyecto, lee en este orden:
 
 1. **`.cursor/rules/architect-brain.mdc`** — reglas globales operativas del sistema (mismo contenido que aplica Cursor con `alwaysApply: true`).
-2. **`prompts/architect-brain.md`** — protocolos completos `On(...)`: project_start, testing_setup, bdd_setup, database_setup, frontend_setup, database_audit, frontend_audit, task_complete, sync_check, ticket_close, implementation_phase, resume_project, revisit_decision.
+2. **`prompts/architect-brain.md`** — protocolos completos `On(...)`: project_start, testing_setup, bdd_setup, supply_chain_setup, supply_chain_audit, database_setup, frontend_setup, database_audit, frontend_audit, task_complete, sync_check, ticket_close, implementation_phase, resume_project, revisit_decision.
 3. **`AGENTS.md`** — resumen rapido y stack canonico.
-4. **`/docs/`** — SSOT del proyecto concreto en el que estas: `prd.md`, `architecture.md`, `blueprints.md`, `user-stories.md`, `roadmap.md`, `testing-strategy.md`, `database-strategy.md` (si hay BD), `frontend-strategy.md` (si hay frontend), `decisions-log.md`.
+4. **`/docs/`** — SSOT del proyecto concreto en el que estas: `prd.md`, `architecture.md`, `blueprints.md`, `user-stories.md`, `roadmap.md`, `testing-strategy.md`, `database-strategy.md` (si hay BD), `frontend-strategy.md` (si hay frontend), `supply-chain-strategy.md` (si usa npm registry), `decisions-log.md`.
 
 ---
 
@@ -34,6 +34,7 @@ Aunque Claude Code soporta `.claude/commands/` para slash commands nativos, este
 - `/revisar-bd` → `.cursor/skills/revisar-bd/SKILL.md`
 - `/revisar-frontend` → `.cursor/skills/revisar-frontend/SKILL.md`
 - `/bdd` → `.cursor/skills/bdd/SKILL.md` *(nuevo en v4.5)*
+- `/revisar-supply-chain` → `.cursor/skills/revisar-supply-chain/SKILL.md` *(nuevo en v4.6)*
 
 Skills auxiliares (cargar con `@` o automaticamente segun contexto):
 
@@ -45,6 +46,7 @@ Skills auxiliares (cargar con `@` o automaticamente segun contexto):
 - `.cursor/skills/visual-testing-skill/SKILL.md` — tests UI con axe + Playwright + visual diff.
 - `.cursor/skills/bdd-skill/SKILL.md` — Behavior-Driven Development (Gherkin, herramientas 2026, Three Amigos, anti-patrones de Gherkin por IA). *(nuevo en v4.5)*
 - `.cursor/skills/ai-testing-skill/SKILL.md` — testing asistido por IA (Playwright MCP/CLI, prompting, gates, GDPR, EU AI Act). *(nuevo en v4.5)*
+- `.cursor/skills/supply-chain-skill/SKILL.md` — defensas en 4 capas (minimumReleaseAge, allowBuilds, GitHub Actions hardening, OIDC pinning), respuesta a incidentes (TanStack, Shai-Hulud). *(nuevo en v4.6)*
 - `.cursor/skills/prompt-skill/SKILL.md` — manual del usuario para redactar prompts profesionales (RACEO).
 
 ---
@@ -80,6 +82,8 @@ Estas son las que aplicas tu, Claude Code, en cada turno. Para el detalle, lee `
 11. **BDD sin Three Amigos NO se adopta** *(nuevo en v4.5)*: Gherkin sin conversacion previa es disfraz tecnico. Si el equipo no esta dispuesto, mejor NO adoptar BDD.
 12. **Tests IA trazables** *(nuevo en v4.5)*: cada test generado por LLM tiene su `*.prompt.md` asociado, pasa code review humano y nunca se mergea por auto-aprobacion.
 13. **AI literacy + GDPR** *(nuevo en v4.5)*: EU AI Act exige formacion en uso responsable de IA desde febrero 2025. NO enviar PII a LLMs externos sin DPA valido.
+14. **Supply chain en 4 capas** *(nuevo en v4.6)*: `minimumReleaseAge` + `allowBuilds` + GitHub Actions hardening + OIDC pinning. Provenance SLSA valido NO es garantia (lo demostro el ataque TanStack del 11 mayo 2026).
+15. **Respuesta a incidente con orden critico** *(nuevo en v4.6)*: NO revocar token de GitHub antes de limpiar el daemon de persistencia. Algunos payloads ejecutan `rm -rf ~/` al detectar revocacion.
 
 ---
 
@@ -97,6 +101,7 @@ He recibido tu peticion. Segun el protocolo de calidad:
 6. ¿Esta peticion toca el frontend (componentes, paginas, estilos, a11y)? Si es si, ¿debo actualizar docs/frontend-strategy.md?
 7. ¿Esta peticion implica criterios de aceptacion validables por stakeholders no tecnicos? Si es si, ¿procede adoptar o ampliar BDD (`/bdd`)?
 8. ¿Voy a usar agentes IA (Cursor Agent, Claude Code, Copilot, Playwright MCP) para generar o mantener tests? Si es si, recuerda la politica de trazabilidad: cada test generado con `*.prompt.md` asociado, code review obligatoria, y consideraciones GDPR / EU AI Act si la app es de alto riesgo.
+9. ¿Esta peticion toca package.json, lockfile, .npmrc, pnpm-workspace.yaml o .github/workflows/? Si es si, ¿debo actualizar docs/supply-chain-strategy.md?
 
 No tocare el codigo hasta que confirmes la sincronizacion documental.
 ```

@@ -216,3 +216,34 @@ Documentación completa en `.cursor/skills/ai-testing-skill/SKILL.md`.
 - [ ] Decisión sobre proveedor de LLM y región registrada en `docs/decisions-log.md`.
 
 Referencia: `.cursor/skills/ai-testing-skill/SKILL.md` sección "Riesgos y límites".
+
+---
+
+## Supply chain (si el proyecto usa npm registry)
+
+*Rellenar solo si el proyecto tiene `package.json` (Node.js, JS/TS, frontend con npm).*
+
+Las defensas detalladas viven en `docs/supply-chain-strategy.md`. Esta sección resume la intersección con la estrategia de testing.
+
+### Configuración del package manager
+*Ejemplo:*
+- Package manager: **pnpm 11** (`packageManager` field en `package.json`).
+- `minimumReleaseAge: 1440` (1 día, default pnpm 11).
+- `blockExoticSubdeps: true` (default pnpm 11).
+- `allowBuilds`: electron, esbuild, sharp, @swc/core (justificaciones en `supply-chain-strategy.md`).
+
+### Tests con dependencias muy nuevas
+- [ ] Tests de integración y E2E NO instalan paquetes con menos de 24h en CI.
+- [ ] Si un test requiere un paquete recien publicado, se documenta como excepción en `minimumReleaseAgeExclude` con ADR.
+
+### CI hardening (GitHub Actions)
+- [ ] Workflows de test ejecutan `pnpm install --frozen-lockfile` (NUNCA `pnpm install` a secas).
+- [ ] NUNCA `pull_request_target` con checkout del fork.
+- [ ] Acciones pineadas a SHA, no a tag mutable.
+- [ ] Cache no compartida entre workflows con distinto trust boundary.
+
+### Respuesta a incidente
+- [ ] Equipo conoce el orden critico: NO revocar token de GitHub antes de limpiar daemon de persistencia.
+- [ ] Lockfile cross-referenciado regularmente con bases publicas (TanStack GHSA-g7cv-rxg3-hmpx, Shai-Hulud, axios, Trivy).
+
+Documentación completa en `.cursor/skills/supply-chain-skill/SKILL.md`.

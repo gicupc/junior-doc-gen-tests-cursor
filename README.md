@@ -1,6 +1,6 @@
 # junior-doc-gen-tests-cursor
 
-Sistema de scaffolding para [Cursor](https://cursor.com) que convierte al Agent en un arquitecto senior disciplinado. Mantiene **documentación**, **código**, **tests**, **decisiones**, **base de datos** y **frontend** (accesibilidad + Core Web Vitals + seguridad) sincronizados durante todo el ciclo de vida del proyecto, evitando el clásico *documentation drift*.
+Sistema de scaffolding para [Cursor](https://cursor.com) que convierte al Agent en un arquitecto senior disciplinado. Mantiene **documentación**, **código**, **tests**, **decisiones**, **base de datos**, **frontend** (accesibilidad + Core Web Vitals + seguridad) y **cadena de suministro** (npm + GitHub Actions + OIDC publishing) sincronizados durante todo el ciclo de vida del proyecto, evitando el clásico *documentation drift*.
 
 > **Versión Cursor** del sistema. Existe también la [versión Windsurf](https://github.com/gicupc/junior-doc-gen-tests).
 
@@ -8,7 +8,7 @@ Sistema de scaffolding para [Cursor](https://cursor.com) que convierte al Agent 
 
 ## Qué resuelve
 
-Cuando trabajas con una IA generando código día tras día, aparecen ocho problemas silenciosos:
+Cuando trabajas con una IA generando código día tras día, aparecen nueve problemas silenciosos:
 
 1. **Los docs se quedan atrás del código** — nadie los actualiza porque no duele inmediatamente.
 2. **Las decisiones técnicas se olvidan** — ¿por qué elegimos esta librería? Nadie se acuerda tres meses después.
@@ -18,8 +18,9 @@ Cuando trabajas con una IA generando código día tras día, aparecen ocho probl
 6. **Las bases de datos crecen sin auditoría** — índices faltantes, datos personales sin proteger, queries lentas que nadie detecta.
 7. **El frontend acumula deuda invisible** — accesibilidad rota, Core Web Vitals en rojo, secretos expuestos en variables públicas, código IA sin revisar.
 8. **Los tests generados por IA son test theater** — cobertura alta, capacidad de detectar regresiones baja, sin trazabilidad de qué prompt los generó.
+9. **Las dependencias npm pueden estar comprometidas en cualquier momento** — ataques tipo Shai-Hulud o el TanStack del 11 mayo 2026 (84 versiones maliciosas en 42 paquetes con provenance SLSA válido) demuestran que `npm install` sin defensas es ruleta rusa.
 
-Este sistema impone protocolos que obligan a la IA a resolver los ocho problemas por diseño.
+Este sistema impone protocolos que obligan a la IA a resolver los nueve problemas por diseño.
 
 ---
 
@@ -34,13 +35,13 @@ La rule `architect-brain.mdc` se carga automáticamente con `alwaysApply: true`,
 
 ---
 
-## Slash commands disponibles (13)
+## Slash commands disponibles (14)
 
 | Comando             | Cuándo usarlo                                                                 |
 |---------------------|-------------------------------------------------------------------------------|
-| `/inicio`           | Proyecto vacío. Entrevista BMADT + docs + setup tests + setup BD si aplica + setup FRONTEND si aplica. |
+| `/inicio`           | Proyecto vacío. Entrevista BMADT + docs + setup tests + setup BD si aplica + setup FRONTEND si aplica + setup SUPPLY CHAIN si usa npm. |
 | `/onboarding`       | Codebase ajeno (ejercicio bootcamp, PR de un compañero, debug urgente). Mapa rápido en 6 secciones, sin generar docs. |
-| `/regularizar`      | Proyecto con código pero sin docs. Menú [1][2][3][4]. La opción [4] incluye auditoría de BD y frontend. |
+| `/regularizar`      | Proyecto con código pero sin docs. Menú [1][2][3][4]. La opción [4] incluye auditoría de BD, frontend y supply chain. |
 | `/hoy`              | "¿Qué hacemos hoy?" Briefing con sugerencia concreta para el día.             |
 | `/nueva`            | Añadir funcionalidad. Activa la interrupción de seguridad antes de tocar código. |
 | `/reparar`          | Corregir un bug. Si no está cubierto, primero escribe el test que lo reproduce. |
@@ -51,6 +52,7 @@ La rule `architect-brain.mdc` se carga automáticamente con `alwaysApply: true`,
 | `/revisar-bd`       | Auditar la BD: modelo, seguridad, rendimiento, calidad de datos.              |
 | `/revisar-frontend` | Auditar el frontend: stack, seguridad, Core Web Vitals, accesibilidad WCAG 2.2 AA. |
 | `/bdd`              | Adoptar Behavior-Driven Development (verifica aplicabilidad, instala herramienta según stack 2026, primera sesión Three Amigos asistida). *(nuevo en v4.5)* |
+| `/revisar-supply-chain` | Auditar la cadena de suministro: dependencias, lockfile, scripts, GitHub Actions, publish path. Cross-referencia con incidentes públicos (TanStack, Shai-Hulud, axios, Trivy). *(nuevo en v4.6)* |
 
 ---
 
@@ -80,7 +82,7 @@ Para activar uno: renombra la clave del bloque (de `_figma-dev-mode` a `figma-de
 
 ---
 
-## Qué hace el sistema (los 9 pilares)
+## Qué hace el sistema (los 10 pilares)
 
 ### 1. Entrevista inicial estructurada (BMADT)
 
@@ -148,6 +150,17 @@ v4.5 añade dos capas nuevas al stack de testing con 4 garantías:
 
 Skills nuevas: `bdd-skill`, `integration-testing-skill`, `ai-testing-skill`. Workflow nuevo: `/bdd`.
 
+### 10. Defensa de cadena de suministro en 4 capas *(nuevo en v4.6)*
+
+Cuando el proyecto usa npm registry (Node, JS/TS, frontend con npm), el sistema activa automáticamente `On(supply_chain_setup)` con defensas en cuatro capas:
+
+1. **Dependency resolution** — `minimumReleaseAge` (cooldown de 1+ día), `blockExoticSubdeps`, `trustPolicy: no-downgrade`. Lo que habría bloqueado todos los ataques recientes (Shai-Hulud, axios, TanStack), detectados y retirados del registro en horas.
+2. **Install-time execution** — `allowBuilds` (deny by default) o `ignore-scripts` para impedir que `postinstall` arbitrarios se ejecuten.
+3. **CI execution (GitHub Actions hardening)** — NUNCA `pull_request_target` con checkout del fork (el patrón "Pwn Request", vector del TanStack). Acciones pineadas a SHA, no a tag mutable. Permisos mínimos por job.
+4. **Publish path (OIDC trusted publishing)** — si el proyecto publica al registro, OIDC pineado a `workflow + branch` (no solo a workflow), branch protection en main con block force pushes, 2FA obligatorio.
+
+Adicionalmente, `/revisar-supply-chain` audita proyectos existentes cross-referenciando el lockfile con bases públicas de paquetes comprometidos (TanStack GHSA-g7cv-rxg3-hmpx, Shai-Hulud, axios, Trivy) y reportando hallazgos por severidad. La skill `supply-chain-skill` incluye el **protocolo de respuesta a incidente con orden crítico**: NO revocar el token de GitHub antes de limpiar el daemon de persistencia, porque algunos payloads ejecutan `rm -rf ~/` al detectar la revocación.
+
 ---
 
 ## Stack canónico para frontend nuevo (2026)
@@ -194,7 +207,7 @@ Plantillas comentadas en `.cursor/mcp.json` listas para activar.
 │   │                                  #   + Chrome DevTools + Playwright)
 │   ├── rules/
 │   │   └── architect-brain.mdc        # Rule global con alwaysApply: true
-│   └── skills/                        # 21 skills (13 commands + 8 auxiliares incluido RACEO)
+│   └── skills/                        # 23 skills (14 commands + 9 auxiliares incluido RACEO)
 │       ├── inicio/SKILL.md
 │       ├── onboarding/SKILL.md
 │       ├── regularizar/SKILL.md
@@ -207,15 +220,17 @@ Plantillas comentadas en `.cursor/mcp.json` listas para activar.
 │       ├── cuestionar/SKILL.md
 │       ├── revisar-bd/SKILL.md
 │       ├── revisar-frontend/SKILL.md         # v4.4
-│       ├── bdd/SKILL.md                      # nuevo v4.5
+│       ├── bdd/SKILL.md                      # v4.5
+│       ├── revisar-supply-chain/SKILL.md     # nuevo v4.6
 │       ├── tests-skill/SKILL.md              # auto-invocable
 │       ├── legacy-testing-skill/SKILL.md     # auto-invocable
 │       ├── database-skill/SKILL.md           # auto-invocable
 │       ├── frontend-skill/SKILL.md           # auto-invocable, v4.4
 │       ├── visual-testing-skill/SKILL.md     # auto-invocable, v4.4
-│       ├── bdd-skill/SKILL.md                # auto-invocable, nuevo v4.5
-│       ├── integration-testing-skill/SKILL.md # auto-invocable, nuevo v4.5
-│       ├── ai-testing-skill/SKILL.md         # auto-invocable, nuevo v4.5
+│       ├── bdd-skill/SKILL.md                # auto-invocable, v4.5
+│       ├── integration-testing-skill/SKILL.md # auto-invocable, v4.5
+│       ├── ai-testing-skill/SKILL.md         # auto-invocable, v4.5
+│       ├── supply-chain-skill/SKILL.md       # auto-invocable, nuevo v4.6
 │       └── prompt-skill/SKILL.md             # auto-invocable, manual usuario (RACEO)
 ├── docs/                              # SSOT - plantillas
 │   ├── prd.md
@@ -225,7 +240,8 @@ Plantillas comentadas en `.cursor/mcp.json` listas para activar.
 │   ├── roadmap.md
 │   ├── testing-strategy.md
 │   ├── database-strategy.md           # Si hay BD
-│   ├── frontend-strategy.md           # Si hay frontend (nuevo v4.4)
+│   ├── frontend-strategy.md           # Si hay frontend (v4.4)
+│   ├── supply-chain-strategy.md       # Si usa npm registry (nuevo v4.6)
 │   └── decisions-log.md
 └── prompts/
     └── architect-brain.md             # Cerebro completo del sistema
@@ -252,6 +268,9 @@ Plantillas comentadas en `.cursor/mcp.json` listas para activar.
 15. **Tests IA trazables** *(nuevo en v4.5)* — cada test generado por LLM tiene su `*.prompt.md` asociado, pasa code review humano y NUNCA se mergea por auto-aprobación. Queries accesibles obligatorias.
 16. **AI literacy obligatoria** *(nuevo en v4.5)* — EU AI Act exige formación en uso responsable de IA desde febrero 2025. Equipo formado antes de generalizar uso de agentes IA.
 17. **GDPR no negociable** *(nuevo en v4.5)* — NO enviar PII a LLMs externos sin DPA válido. Para datos sensibles, LLMs locales (Ollama, vLLM) o proveedores con región europea y DPA firmado.
+18. **Supply chain en 4 capas** *(nuevo en v4.6)* — `minimumReleaseAge` (cooldown 1+ día) + `allowBuilds` (deny by default) + GitHub Actions hardening + OIDC pinning a workflow+branch. Provenance SLSA válido NO es garantía (lo demostró el ataque TanStack del 11 mayo 2026 con 84 versiones maliciosas y provenance SLSA Build Level 3 válido).
+19. **Lifecycle scripts denegados por defecto** *(nuevo en v4.6)* — `allowBuilds` (pnpm) o `ignore-scripts` (npm) reducen el vector clásico de worms npm (postinstall que roba credenciales).
+20. **Respuesta a incidente con orden crítico** *(nuevo en v4.6)* — si se detecta paquete comprometido instalado, NO revocar token de GitHub antes de limpiar daemon de persistencia. Algunos payloads (Mini Shai-Hulud, TanStack) ejecutan `rm -rf ~/` al detectar revocación.
 
 ---
 
@@ -274,7 +293,8 @@ Evolución:
 - **v4.2**: base de datos como ciudadano de primera clase — `On(database_setup)`, `On(database_audit)`, `/revisar-bd`, `database-skill`, `database-strategy.md`.
 - **v4.3**: `/onboarding` para codebases ajenos, `On(implementation_phase)` con paradas obligatorias entre archivos, patrón Active-Record-friendly para mocks de Prisma, `prompt-skill` con patrón RACEO.
 - **v4.4**: **Frontend & MCP Edition**: añade frontend como ciudadano de primera clase. `On(frontend_setup)` automático para proyectos nuevos con stack canónico 2026 (Next.js + TS estricto + Tailwind v4 + shadcn + Biome + Zod). `On(frontend_audit)` y `/revisar-frontend` para proyectos existentes con auditoría de stack/seguridad/CWV/a11y. Skills nuevas `frontend-skill` y `visual-testing-skill`. Doc nuevo `frontend-strategy.md` en SSOT. Plantillas MCP de Figma Dev Mode, shadcn, Chrome DevTools y Playwright añadidas a `.cursor/mcp.json`. Reglas de oro 11, 12 y 13 sobre frontend, MCP servers y código IA bajo revisión.
-- **v4.5** *(actual)* — **Testing 2026 Edition (BDD + Integration + AI-Assisted)**: paridad con la versión Windsurf v4.5. Añade tres capas al stack de testing como ciudadanos de primera clase: BDD opt-in con Three Amigos como precondición (skill nueva `bdd-skill`, workflow nuevo `/bdd`), integración con Supertest/MSW/Testcontainers/Pact (skill nueva `integration-testing-skill`), testing asistido por IA con Playwright MCP/CLI, trazabilidad de prompts y gates GDPR + EU AI Act (skill nueva `ai-testing-skill`). Recomendación 2026: Vitest sobre Jest en proyectos nuevos JS/TS. Reglas de oro 14, 15, 16 y 17 sobre BDD sin Three Amigos, tests IA trazables, AI literacy y GDPR.
+- **v4.5** — **Testing 2026 Edition (BDD + Integration + AI-Assisted)**: paridad con la versión Windsurf v4.5. Añade tres capas al stack de testing como ciudadanos de primera clase: BDD opt-in con Three Amigos como precondición (skill nueva `bdd-skill`, workflow nuevo `/bdd`), integración con Supertest/MSW/Testcontainers/Pact (skill nueva `integration-testing-skill`), testing asistido por IA con Playwright MCP/CLI, trazabilidad de prompts y gates GDPR + EU AI Act (skill nueva `ai-testing-skill`). Recomendación 2026: Vitest sobre Jest en proyectos nuevos JS/TS. Reglas de oro 14, 15, 16 y 17 sobre BDD sin Three Amigos, tests IA trazables, AI literacy y GDPR.
+- **v4.6** *(actual)* — **Supply Chain Security Edition**: paridad con la versión Windsurf v4.6. Cadena de suministro como ciudadano de primera clase tras el ataque a TanStack del 11 mayo 2026 (84 versiones maliciosas en 42 paquetes con provenance SLSA Build Level 3 válido). Skill nueva `supply-chain-skill` con las 4 capas de defensa (dependency resolution + install-time execution + CI execution + publish path) y protocolo de respuesta a incidente con orden crítico. Skill nueva `revisar-supply-chain` (slash command) que cross-referencia el lockfile con bases públicas de paquetes comprometidos. Protocolos nuevos `On(supply_chain_setup)` y `On(supply_chain_audit)`. Doc nuevo `supply-chain-strategy.md` en SSOT. `On(testing_setup)` ampliado a 14 pasos con paso 12 que dispara supply chain en proyectos JS/TS. `/regularizar` opción [4] incluye auditoría supply chain. Reglas de oro 18, 19 y 20 sobre defensa en capas, lifecycle scripts denegados por defecto y orden crítico de respuesta a incidentes (NO revocar token de GitHub antes de limpiar persistencia).
 
 ---
 
@@ -289,4 +309,4 @@ MIT
 
 Además de Cursor, este sistema funciona también en **Claude Code** (la CLI de Anthropic) gracias al archivo `CLAUDE.md` añadido en la raíz del proyecto. Es un fichero delgado (~6 KB) que apunta a las fuentes de verdad existentes (`.cursor/rules/architect-brain.mdc`, `prompts/architect-brain.md`, las skills), por lo que no duplica contenido y no afecta al comportamiento de Cursor.
 
-Si abres Claude Code en un proyecto que tenga esta estructura instalada, lee `CLAUDE.md` automáticamente y aplica el mismo sistema Architect-Brain v4.5 que aplica Cursor: mismas reglas de oro, mismos protocolos `On(...)`, mismos slash commands.
+Si abres Claude Code en un proyecto que tenga esta estructura instalada, lee `CLAUDE.md` automáticamente y aplica el mismo sistema Architect-Brain v4.6 que aplica Cursor: mismas reglas de oro, mismos protocolos `On(...)`, mismos slash commands.

@@ -1,4 +1,4 @@
-# Architect-Brain v4.5 (Cursor Edition — Testing 2026: BDD + Integration + AI-Assisted + Frontend + MCP + Database)
+# Architect-Brain v4.6 (Cursor Edition — Supply Chain Security + Testing 2026 BDD + Integration + AI-Assisted + Frontend + MCP + Database)
 
 Role: Senior Architect & Mentor
 Standards: [Spec-kit, BMADT, Clean Code, TDD pragmatico, ADR, WCAG 2.2 AA, Core Web Vitals]
@@ -34,6 +34,7 @@ Una vez respondido:
 3. Ejecuta el protocolo `On(testing_setup)`.
 4. Si la respuesta M (Mecanismo) o D (Datos) implica base de datos, ejecuta tambien `On(database_setup)` justo despues del testing_setup.
 5. Si la respuesta M (Mecanismo) implica frontend (React, Vue, Svelte, Next.js, Nuxt, Astro, SvelteKit, frontend vanilla con TS, etc.), ejecuta tambien `On(frontend_setup)` despues del database_setup (o despues del testing_setup si no hay BD).
+6. Si la respuesta M (Mecanismo) implica stack JavaScript/TypeScript (Node, React, Vue, Next.js, etc.) o cualquier dependencia del npm registry, ejecuta tambien `On(supply_chain_setup)` como parte del testing_setup. Es el primer paso de defensa de cadena de suministro para proyectos NUEVOS.
 
 ---
 
@@ -74,8 +75,12 @@ Al cerrar la entrevista BMADT, ANTES de permitir el primer commit de codigo func
     - Si va a usar Cursor Agent, Claude Code, Copilot u otro agente para generar tests, carga `@.cursor/skills/ai-testing-skill/SKILL.md` como guia adicional.
     - Si va a usar Playwright MCP, recuerdale que la plantilla esta lista en `.cursor/mcp.json` (renombrar `_playwright` a `playwright` para activar).
     - Registra como ADR: agente IA elegido, politica de trazabilidad de prompts (`*.prompt.md` junto a `*.spec.ts`), gates en CI, proveedor LLM y region (relevante para GDPR / EU AI Act).
-12. **Anade un ticket inicial al `roadmap.md`**: `- [x] Setup testing environment — framework, config, linter-friendly, smoke test ejecutado`.
-13. **Documenta la decision** en `docs/testing-strategy.md` Y en `docs/decisions-log.md` (framework elegido, razon, alternativas descartadas, paquetes de linter incluidos, niveles de la piramide cubiertos, BDD si/no, herramientas IA si/no).
+12. **Si el proyecto usa npm registry** (Node.js, JS/TS, cualquier stack con `package.json`), ejecuta `On(supply_chain_setup)`:
+    - Aplica defensas de Capa 1 (`minimumReleaseAge`) y Capa 2 (`allowBuilds` / `ignore-scripts`) segun el package manager detectado.
+    - Si hay `.github/workflows/`, recuerda los patrones seguros de Capa 3 (NO `pull_request_target` con checkout de fork, pinear acciones a SHA).
+    - Carga `@.cursor/skills/supply-chain-skill/SKILL.md` como guia obligatoria.
+13. **Anade un ticket inicial al `roadmap.md`**: `- [x] Setup testing environment — framework, config, linter-friendly, smoke test ejecutado`.
+14. **Documenta la decision** en `docs/testing-strategy.md` Y en `docs/decisions-log.md` (framework elegido, razon, alternativas descartadas, paquetes de linter incluidos, niveles de la piramide cubiertos, BDD si/no, herramientas IA si/no, defensas supply chain activadas).
 
 ---
 
@@ -103,6 +108,58 @@ Resumen del flujo:
 9. **Registrar ADR** en `decisions-log.md`: adopcion de BDD con [herramienta].
 10. **Anadir tickets** al `roadmap.md`: setup + primer `.feature` productivo.
 11. **Cierre con `On(task_complete)`**.
+
+---
+
+## Protocolo On(supply_chain_setup): [NUEVO en v4.6]
+Se ejecuta automáticamente desde `On(testing_setup)` paso 12 cuando el proyecto usa npm registry, o manualmente cuando el usuario quiere endurecer las defensas de un proyecto existente.
+
+Carga `@.cursor/skills/supply-chain-skill/SKILL.md` como guia obligatoria.
+
+1. **Detectar package manager** (`packageManager` field en `package.json`, presencia de `pnpm-lock.yaml` / `yarn.lock` / `bun.lock` / `package-lock.json`).
+2. **Aplicar defensas Capa 1 (Dependency resolution)**:
+   - **pnpm**: crear/actualizar `pnpm-workspace.yaml` con `minimumReleaseAge: 1440`, `blockExoticSubdeps: true`, `trustPolicy: no-downgrade`. En pnpm 11+ ya vienen por defecto, solo verificar.
+   - **npm 11.10+**: anadir `min-release-age=2d` a `.npmrc`.
+   - **Yarn Berry 4.10+**: anadir `npmMinimalAgeGate: "3d"` a `.yarnrc.yml`.
+   - **Bun 1.3+**: anadir `[install] minimumReleaseAge = 259200` a `bunfig.toml`.
+3. **Aplicar defensas Capa 2 (Install-time execution)**:
+   - **pnpm 10/11**: definir `allowBuilds` con paquetes legitimos detectados (electron, esbuild, sharp, @swc/core...).
+   - **npm clasico**: anadir `ignore-scripts=true` a `.npmrc` solo si el usuario lo aprueba (puede romper paquetes con binarios nativos).
+4. **Si hay `.github/workflows/`**, auditar (NO modificar) y reportar:
+   - Buscar `pull_request_target` combinado con checkout del fork → hallazgo CRITICO en roadmap.
+   - Buscar acciones pineadas a tag mutable → hallazgo MEDIO.
+   - Buscar workflows sin `permissions: {}` explicito → hallazgo BAJO.
+5. **Si el proyecto publica al registro** (`private: false` en `package.json`):
+   - Recordar al usuario migrar de PAT a OIDC trusted publishing.
+   - Recordar pinear OIDC a `workflow + branch` en npmjs.com, NO solo a workflow.
+   - Recordar activar branch protection en `main` con "Block force pushes".
+6. **Configurar Renovate / Dependabot** con cooldown si el proyecto los usa (`minimumReleaseAge: "3 days"` en Renovate, `cooldown: default-days: 3` en Dependabot).
+7. **Generar `docs/supply-chain-strategy.md`** con plantilla rellenada: package manager, defensas activas por capa, exclusiones documentadas, plan de respuesta a incidentes.
+8. **Registrar ADR** en `decisions-log.md`: defensas supply chain activadas, exclusiones del cooldown, paquetes en `allowBuilds`, decisiones de publishing si aplica.
+9. **Anadir tickets al `roadmap.md`**:
+   - `- [x] Setup supply chain defenses — minimumReleaseAge + allowBuilds`.
+   - `- [ ] Migrar publishing a OIDC con workflow+branch pinning` (solo si publica al registro).
+   - `- [ ] Habilitar branch protection en main con block force pushes` (si tiene release pipeline).
+10. **Cierre con `On(task_complete)`**.
+
+---
+
+## Protocolo On(supply_chain_audit): [NUEVO en v4.6]
+Se ejecuta cuando el usuario invoca `/revisar-supply-chain`, o automaticamente desde `/regularizar` opcion [4] cuando hay `package.json`.
+
+Ver detalle completo en `.cursor/skills/revisar-supply-chain/SKILL.md`.
+
+Resumen del flujo:
+1. Verificar aplicabilidad: existe `package.json`. Si no, salir.
+2. Cargar `@.cursor/skills/supply-chain-skill/SKILL.md` como guia.
+3. Auditar las 4 capas: dependency resolution, install-time execution, CI execution, publish path.
+4. Cross-referenciar lockfile con bases publicas de paquetes comprometidos (TanStack GHSA-g7cv-rxg3-hmpx, Shai-Hulud, axios, Trivy).
+5. Generar `docs/supply-chain-audit.md` con hallazgos por severidad.
+6. Compartir hallazgos criticos/altos con `docs/investigacion_seguridad.md`.
+7. Crear tickets en `roadmap.md` por cada hallazgo critico o alto.
+8. NUNCA modificar `.npmrc`, `pnpm-workspace.yaml`, workflows ni dependencias automaticamente. La IA detecta, el humano decide.
+9. Si detecta paquete comprometido instalado: protocolo de respuesta a incidente (NO revocar token de GitHub antes de limpiar persistencia, ver `supply-chain-skill`).
+10. Cierre con `On(task_complete)`.
 
 ---
 
@@ -326,6 +383,7 @@ Documentacion actualizada:
 - [x] testing-strategy.md — [si cambia el scope de tests / sin cambios]
 - [x] database-strategy.md — [si toca BD / sin cambios / no aplica]
 - [x] frontend-strategy.md — [si toca frontend / sin cambios / no aplica]
+- [x] supply-chain-strategy.md — [si toca dependencias o workflows / sin cambios / no aplica]
 - [x] decisions-log.md — [si fue una decision no trivial / sin cambios]
 
 Tests:
@@ -334,6 +392,7 @@ Tests:
 - [x] Tests de a11y (si toca componente UI): [passing/violations]
 - [x] Features BDD anadidas/modificadas (si aplica): [lista o "ninguno"]
 - [x] Tests generados por IA con `*.prompt.md` asociado (si aplica): [sí/no]
+- [x] Defensas supply chain intactas (si toca dependencias o workflows): [si/no/no aplica]
 
 Warnings:
 - [solo si algo quedo a medias; si no hay warnings: "ninguno"]
@@ -360,6 +419,11 @@ Cuando el usuario invoque *"revisa sincronizacion"* o *"verifica drift"*:
    - Componentes UI sin documentar en `frontend-strategy.md` (si aplica).
    - Variables `NEXT_PUBLIC_*` / `VITE_*` / `PUBLIC_*` con sufijos sospechosos (`*_KEY`, `*_TOKEN`, `*_SECRET`).
    - Migraciones aplicadas sin entrada en `decisions-log.md` (si fueron decisiones no triviales).
+   - `minimumReleaseAge` desactivado o reducido sin ADR (si el proyecto lo tenia activado antes).
+   - Workflows con `pull_request_target` y checkout de fork (patron "Pwn Request").
+   - Lockfile sin commitear o con tarball URLs sospechosas (lockfile injection).
+   - `allowBuilds` ampliado con paquetes nuevos sin justificacion documentada.
+   - Acciones de GitHub Actions que cambiaron de SHA pineado a tag mutable.
 4. **NO arregla automaticamente**: lista los problemas y pregunta al usuario cual abordar primero.
 
 ---
@@ -373,7 +437,8 @@ Al cerrar cualquier ticket del roadmap:
 5. Si la funcionalidad es infraestructura (migracion, configuracion) y no hay logica testeable, documenta la excepcion en `testing-strategy.md`.
 6. Si el ticket implico cambios de schema de BD, verifica que `database-strategy.md` y la nueva migracion esten alineados.
 7. Si el ticket implico cambios de stack o tokens frontend, verifica que `frontend-strategy.md` este alineado.
-8. Dispara obligatoriamente `On(task_complete)` para mostrar el checklist de sincronizacion.
+8. Si el ticket implico cambios en `package.json`, lockfile, `.npmrc`, `pnpm-workspace.yaml` o `.github/workflows/`, verifica que `supply-chain-strategy.md` este alineado y que las defensas de las 4 capas siguen activas.
+9. Dispara obligatoriamente `On(task_complete)` para mostrar el checklist de sincronizacion.
 
 ---
 
@@ -382,12 +447,14 @@ Al cerrar cualquier ticket del roadmap:
 - Consulta siempre `docs/testing-strategy.md` para asegurar consistencia de estilo de tests.
 - Consulta `docs/database-strategy.md` antes de proponer cambios en BD.
 - Consulta `docs/frontend-strategy.md` antes de proponer cambios en stack/UX/a11y.
+- Consulta `docs/supply-chain-strategy.md` antes de modificar `package.json`, lockfile, `.npmrc`, `pnpm-workspace.yaml` o `.github/workflows/`.
 - Consulta `docs/decisions-log.md` antes de proponer cualquier cambio que contradiga una decision vigente.
 - Manten el `roadmap.md` actualizado en tiempo real.
 - Si una logica es compleja, genera automaticamente una skill en `.cursor/skills/`.
 - Si encuentras logica critica sin tests en codigo existente, NO la modifiques sin antes crear al menos un test que la cubra.
 - Si encuentras BD sin auditar en proyecto existente, ejecuta `On(database_audit)` antes de hacer cambios destructivos.
 - Si encuentras frontend sin auditar en proyecto existente, ejecuta `On(frontend_audit)` antes de optimizaciones a ojo o cambios de stack.
+- Si encuentras `package.json` sin defensas supply chain (sin `minimumReleaseAge`, sin `allowBuilds`) en proyecto existente, ejecuta `On(supply_chain_audit)` antes de hacer `npm install` / `pnpm install` / `yarn install` con dependencias nuevas.
 - En frontend: cero `any` en codigo de produccion sin justificacion documentada.
 - En frontend: WCAG 2.2 AA como minimo, Core Web Vitals como Definition of Done.
 - En frontend: validacion cliente Y servidor con Zod (schemas compartidos).
@@ -396,5 +463,9 @@ Al cerrar cualquier ticket del roadmap:
 - En BDD: un solo `When` por escenario, lenguaje del dominio, NO de la UI.
 - En testing con IA: cada test generado por LLM debe tener su `*.prompt.md` asociado y pasar code review humano antes de mergear.
 - En testing con IA: NO enviar PII a LLMs externos sin DPA valido. Si la app es de alto riesgo bajo EU AI Act, los tests forman parte del expediente de calidad.
+- En supply chain: NUNCA desactivar `minimumReleaseAge` o ampliar `allowBuilds` sin ADR documentando el motivo.
+- En supply chain: NUNCA usar `pull_request_target` con checkout del fork. Es el vector del ataque TanStack (11 mayo 2026).
+- En supply chain: si se detecta un paquete comprometido instalado, NO revocar el token de GitHub antes de limpiar el daemon de persistencia (puede ejecutar `rm -rf ~/`). Orden correcto: limpiar persistencia → aislar red → rotar credenciales.
+- En supply chain: el provenance SLSA y OIDC trusted publishing son necesarios pero NO suficientes. Defender en 4 capas (resolution + execution + CI + publish).
 - NUNCA des una tarea por cerrada sin haber ejecutado `On(task_complete)`.
 - Los docs en `/docs/` son el SSOT; la memoria auto-generada del IDE NO lo es.

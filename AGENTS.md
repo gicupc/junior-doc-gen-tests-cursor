@@ -1,6 +1,6 @@
 # Project Instructions for AI Agents
 
-Este proyecto usa el sistema **Architect-Brain v4.5** para garantizar calidad en codigo, documentacion, tests, base de datos y frontend (accesibilidad + Core Web Vitals + seguridad).
+Este proyecto usa el sistema **Architect-Brain v4.6** para garantizar calidad en codigo, documentacion, tests, base de datos, frontend (accesibilidad + Core Web Vitals + seguridad) y cadena de suministro (supply chain).
 
 Este archivo sigue el estandar `AGENTS.md` (donado al Linux Foundation en diciembre 2025, soportado nativamente por Cursor, Windsurf, Copilot, Codex, Zed, Warp, Aider, Devin y otros). Para Cursor, las reglas activas estan en `.cursor/rules/architect-brain.mdc` con `alwaysApply: true`.
 
@@ -28,6 +28,7 @@ Escribe `/` en el chat de Agent para ver los slash commands:
 - `/revisar-bd` — auditar base de datos (4 categorias).
 - `/revisar-frontend` — auditar frontend (stack, seguridad, CWV, a11y WCAG 2.2 AA).
 - `/bdd` — adoptar Behavior-Driven Development (verifica aplicabilidad, instala herramienta segun stack 2026, primera sesion Three Amigos asistida, valida `.feature` antes de step definitions). *(nuevo en v4.5)*
+- `/revisar-supply-chain` — auditar cadena de suministro: dependencias, lockfile, scripts, GitHub Actions, publish path. Cross-referencia con incidentes publicos (TanStack, Shai-Hulud, axios, Trivy). *(nuevo en v4.6)*
 
 Skills auxiliares (auto-invocables, sin slash):
 - `tests-skill` — convenciones para generar tests unitarios por stack.
@@ -38,6 +39,7 @@ Skills auxiliares (auto-invocables, sin slash):
 - `visual-testing-skill` — tests de componente con axe + E2E con Playwright + visual diff.
 - `bdd-skill` — Gherkin, herramientas 2026 (playwright-bdd, @cucumber/cucumber, Reqnroll, Karate DSL), Three Amigos, anti-patrones de Gherkin por IA. *(nuevo en v4.5)*
 - `ai-testing-skill` — testing asistido por IA (Playwright MCP/CLI, prompting, anti-patrones, GDPR + EU AI Act). *(nuevo en v4.5)*
+- `supply-chain-skill` — defensas en 4 capas (minimumReleaseAge, allowBuilds, GitHub Actions hardening, OIDC pinning), respuesta a incidentes con orden critico (TanStack, Shai-Hulud). *(nuevo en v4.6)*
 - `prompt-skill` — manual del usuario para redactar prompts profesionales (patron RACEO).
 
 ## Stack canonico para proyectos NUEVOS con frontend (2026)
@@ -83,6 +85,8 @@ Configuracion en `.cursor/mcp.json` (ya incluye plantillas comentadas).
 11. **BDD sin Three Amigos NO se adopta** *(nuevo en v4.5)*: Gherkin sin conversacion previa con stakeholders es disfraz tecnico. Si no se cumplen las precondiciones, registrar ADR "BDD descartado" y volver mas adelante.
 12. **Tests IA trazables** *(nuevo en v4.5)*: cada test generado por LLM tiene su `*.prompt.md` asociado, pasa code review humano y NUNCA se mergea por auto-aprobacion. Queries accesibles obligatorias (cero selectores fragiles).
 13. **AI literacy + GDPR** *(nuevo en v4.5)*: EU AI Act exige formacion en uso responsable de IA desde febrero 2025. NO enviar PII a LLMs externos sin DPA valido. Para apps de alto riesgo (Annex III), los tests forman parte del expediente de calidad.
+14. **Supply chain en 4 capas** *(nuevo en v4.6)*: `minimumReleaseAge` (cooldown 1+ dia) + `allowBuilds` (deny by default) + GitHub Actions hardening (NO `pull_request_target` con checkout de fork, acciones pineadas a SHA) + OIDC pinning a workflow+branch. Provenance SLSA valido NO es garantia (lo demostro el ataque TanStack del 11 mayo 2026).
+15. **Respuesta a incidente con orden critico** *(nuevo en v4.6)*: si se detecta paquete comprometido, NO revocar token de GitHub antes de limpiar daemon de persistencia. Algunos payloads ejecutan `rm -rf ~/` al detectar revocacion.
 
 ## SSOT (Single Source of Truth)
 
@@ -95,4 +99,5 @@ Los archivos `.md` de `/docs/` son la fuente de verdad del proyecto:
 - `testing-strategy.md` — framework, convenciones, cobertura de tests.
 - `database-strategy.md` — motor, ORM, PII, migraciones (si hay BD).
 - `frontend-strategy.md` — stack, MCP, a11y, CWV, visual testing (si hay frontend).
+- `supply-chain-strategy.md` — package manager, defensas 4 capas, plan de respuesta a incidentes (si usa npm registry).
 - `decisions-log.md` — ADRs inmutables.
